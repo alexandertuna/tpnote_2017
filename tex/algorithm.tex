@@ -1,6 +1,8 @@
 \section{MM TP Algorithm}
 \label{sec:alg}
 
+The MM TP algorithm and performance is described in detail elsewhere~\cite{brian,steve}. The algorithm is reviewed in brief here, and adjustments needed to operate the MM TP with a cosmic muon detector are highlighted.
+
 The MM TP algorithm is designed to receive ART data from the ADDC, decode the data, group the data into subsets (``triggers'') which satisfy a spatial and temporal coincidence, and calculate quantities which describe these triggers. The first step is referred to as the \textit{decoder}, the second step is referred to as the \textit{finder}, and the third step is referred to as the \textit{fitter}.
 
 The MM TP algorithm is written in firmware and placed on a Xilinx Virtex-7 FPGA, which is housed by a VC707 evaluation board. The algorithm meets timing requirements for synthesis and implementation of the algorithm on the FPGA. Ultimately, the algorithm will be placed on a larger FPGA on a high-density optical mezzanine card (``HORX'') which will be housed in an ATCA shelf. The VC707 implementation is already capable of testing many aspects of the algorithm, however, including the steps mentioned above.
@@ -26,7 +28,16 @@ Additional adjustments to the MM TP algorithm for use at the cosmic ray test sta
 
 Once the ART data is received and decoded, the next step of the MM TP algorithm is to filter the data into subsets which roughly look like an incident particle traversing the octuplet. This step is called the \textit{finder}.
 
-The finder relies heavily on parallelization. A configurable number of roads are created in the FPGA to span the octuplet, and each roads evaluates in parallel whether is contains a sufficient number of ART strips to form a trigger. In this note, the road size is 1 road per VMM. This is demonstrated graphically in Figure~\ref{}.
+The finder relies heavily on parallelization. A configurable number of roads are created in the FPGA to span the octuplet, and each roads evaluates in parallel whether is contains a sufficient number of ART strips to form a trigger. In this note, the road size is 1 road per VMM. This is demonstrated graphically in Figure~\ref{fig:cartoon_road_demo}.
+
+\begin{figure}[!htpb]
+  \begin{center}
+    \includegraphics[width=1.0\textwidth]{figures/cartoons/cartoon_road_demo}
+  \end{center}
+  \vspace{-20pt}
+  \caption{Cartoon demonstration of a collection of hits which look like a cosmic muon passing through the chamber (left) and a collection which looks random (right). Roads are 1-VMM wide and shown in alternating gray colors. Only the cartoon on the left would form a trigger.}
+  \label{fig:cartoon_road_demo}
+\end{figure}
 
 Additionally, the roads should overlap to avoid edges cases where the incident muon travels near to the boundary of two roads. This is implemented in the finder by allowing each road to use hits not only in their respective road, but also in neighboring roads. The number of neighboring roads is a configurable parameter; in this note, hits from one neighbor above and one neighbor below are used in a given road. For example, road 3 uses hits from VMM 2, VMM 3, and VMM 4, so that the effective road size is 3 VMMs.
 
@@ -56,7 +67,9 @@ The triggers found by the finder are then sent to the \textit{fitter}, which cal
 
 For the NSW, the main deliverables of the fitter are the location and quality of a trigger. The location is represented by a region of interest (ROI), which is a number provided by downstream clients like Sector Logic mapping to $\eta-\phi$ space. The quality of the trigger is represented by the difference in angle a \textit{local} fit of the trigger ART hits and a \textit{global} fit. A \textit{local} fit is performed on only the ART hits, and a \textit{global} fit is performed with the constraint that the trigger be consistent with the interaction point.
 
-The location of the trigger is derived in a Cartesian $m_x-m_y$ space, where $\hat{y}$ points perpendicular to the direction of the $X$-strips, $\hat{x}$ points parallel to the $X$-strips, and $m_i$ is the slope $i/z$\footnote{We apologize for the confusing notation. To recap: $X$, $U$, and $V$ denote different layers of micromegas. $x$, $y$, and $z$ are cartesian coordinates. The $X$-layers measure $m_y$.}. $m_y$ is measured as the average of slopes measured in each $X$-plane, $\overline{m_X}$. $m_x$ is measured as the difference between slopes measured in the $U$ and $V$ planes, with a geometric factor from the angle of the stereo strips: $\frac{m_U - m_V}{2\ \text{tan}(\theta_\text{stereo})}$.
+The location of the trigger is derived in a Cartesian $m_x-m_y$ space, where $\hat{y}$ points perpendicular to the direction of the $X$-strips, $\hat{x}$ points parallel to the $X$-strips, and $m_i$ is the slope $i/z$\footnote{We apologize for the confusing notation. To recap: $X$, $U$, and $V$ denote different layers of micromegas. $x$, $y$, and $z$ are cartesian coordinates. The $X$-layers measure $m_X$, which is used to derive $m_y$.}. $m_y$ is measured as the average of slopes measured in each $X$-plane, $\overline{m_X}$. $m_x$ is measured as the difference between slopes measured in the $U$ and $V$ planes, with a geometric factor from the angle of the stereo strips: $\frac{m_U - m_V}{2\ \text{tan}(\theta_\text{stereo})}$. The standard ATLAS coordinates $\eta$, $\phi$ can be derived directly from $m_x$, $m_y$, where the resolution of $\eta$ ($\phi$) is dominated by the resolution of $m_y$ ($m_x$). Rather than calculate $\eta$, $\phi$, however, the slopes $m_i$ are sent as an address to a LUT which returns a ROI.
+
+To calculate the quality of a trigger, the fitter compares the slopes of a linear fit of the ART data with and without a constraint that it originate at the interaction point. These are referred to as \textit{global} and \textit{local} slopes, respectively, and they only use hits from the $X$-planes. The global slope is simply the aforementioned $m_y$, or $\overline{m_X}$. The local slope is calculated as $m_x^\text{local} = \sum c_i \ y_i$, where the sum includes all $X$ hits, $c_i$ is a constant depending on which $X$-planes are used in the fit, and $y_i$ is the position of the hit. $c_i$ is stored in a LUT, and the multiplication/addition is performed by the FPGA. This analytic ``fit'' gives the slope of the least-squares line. The difference in angles $\Delta\theta$ can be calculated directly from $m_x^\text{local}$, $m_x^\text{global}$, but instead these slopes are sentas an address to a LUT which returns $\Delta\theta$.
 
 \subsection{Output}
 \label{sec:alg-output}
