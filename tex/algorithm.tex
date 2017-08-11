@@ -14,15 +14,6 @@ ART data is transmitted from the ADDC to the MM TP using the GBT protocol via op
 
 After receiving the ART data, the MM TP converts the VMM and strip numbers into global strip numbers, also taking into consideration that some of the MM chambers are flipped relative to each other. For example, if an ART strip from VMM 5 is reported as strip number 30, the MM TP converts this to a global strip number of 350 ($5*64 + 30$). The units of the MM TP are strip pitches, and there is no conversion to a unit of meters. The MM TP then adds the distance from the beamline to the base of the MM chamber, in units of strips, to the global strip number, and divides the global strip number by the $z$-position of the chamber, to convert the strip to a slope, $x_\text{strip} / z_\text{strip}$.
 
-\subsection{Adjustments for cosmic muons}
-\label{sec:alg-crts}
-
-The use of \textit{slopes} instead of \textit{strips} is motivated by the knowledge that particles arriving at the NSW from a proton-proton collision should travel in a nearly straight line. Thus, each layer of MM will record a different strip address for the incident particle, but a nearly identical slope. This simplifies logic for defining spatial \textit{roads} in the MM chamber.
-
-However, for a cosmic ray test stand, the exact origin of incident particles is unknown. The MM TP algorithm is then modified to use strip addresses instead of slopes for the defintion of roads, as discussed in Section~\ref{sec:alg-finder}. The implementation of strip-to-slope conversion in the FPGA is nonetheless tested by multiplying each strip address by 1, instead of $1/z_\text{strip}$, to calculate a ``slope'' which is suitable for spatial coincidences of cosmic muons.
-
-Additional adjustments to the MM TP algorithm for use at the cosmic ray test stand include: \textbf{PUT ADJUSTMENTS HERE}
-
 \subsection{Finder}
 \label{sec:alg-finder}
 
@@ -39,9 +30,9 @@ The finder relies heavily on parallelization. A configurable number of roads are
   \label{fig:cartoon_road_demo}
 \end{figure}
 
-Additionally, the roads should overlap to avoid edges cases where the incident muon travels near to the boundary of two roads. This is implemented in the finder by allowing each road to use hits not only in their respective road, but also in neighboring roads. The number of neighboring roads is a configurable parameter; in this note, hits from one neighbor above and one neighbor below are used in a given road. For example, road 3 uses hits from VMM 2, VMM 3, and VMM 4, so that the effective road size is 3 VMMs.
+Additionally, the roads should overlap to avoid edges cases where the incident muon travels near the boundary of two roads. This is implemented in the finder by allowing each road to use hits not only in their respective road, but also in neighboring roads. The number of neighboring roads is a configurable parameter; in this note, hits from one neighbor above and one neighbor below are used in a given road. For example, road 3 uses hits from VMM 2, VMM 3, and VMM 4, so that the effective road size is 3 VMMs.
 
-The effective road size is chosen to balance the acceptance of cosmic ray muons in the octuplet, the acceptance of the scintillator triggers, and the rejection of background hits. The incident angle of cosmic muons is shown in previous studies with this detector~\ref{}, which is at most 25 degrees. Muons with an angle of 26 degrees can be observed with an effective road size of 3 VMMs, as shown in Figure~\ref{fig:cartoon_road_efficiency}, though some inefficiency can be expected starting at 18 degrees, depending on the position of the muon.
+The effective road size is chosen as the smallest possible road size which accepts most or all of the cosmic muons passing through the detectors. The incident angle of cosmic muons is shown in previous studies with this detector~\cite{noisy,noiseless}, which is at most 25 degrees. Muons with an angle of 26 degrees can be observed with an effective road size of 3 VMMs, as shown in Figure~\ref{fig:cartoon_road_efficiency}, though some inefficiency can be expected starting at 18 degrees, depending on the position of the muon.
 
 \begin{figure}[!htpb]
   \begin{center}
@@ -63,16 +54,35 @@ Every road is capable of forming one trigger per cycle of the BC clock. After ev
 \subsection{Fitter}
 \label{sec:alg-fitter}
 
-The triggers found by the finder are then sent to the \textit{fitter}, which calculates quantities of interest for the trigger. The fitter does not create or remove any triggers. The NSW implementation of the fitter is described first, and modifications for cosmic data-taking are described second.
+The triggers found by the finder are then sent to the \textit{fitter}, which calculates quantities of interest for the trigger. The fitter presently does not create or remove any triggers. The final implementation of the MM TP algorithm may include a quality requirement from the fitter, namely $\Delta\theta < 15^\circ$.
 
-For the NSW, the main deliverables of the fitter are the location and quality of a trigger. The location is represented by a region of interest (ROI), which is a number provided by downstream clients like Sector Logic mapping to $\eta-\phi$ space. The quality of the trigger is represented by the difference in angle a \textit{local} fit of the trigger ART hits and a \textit{global} fit. A \textit{local} fit is performed on only the ART hits, and a \textit{global} fit is performed with the constraint that the trigger be consistent with the interaction point.
+For the NSW, the main deliverables of the fitter are the location and quality of a trigger. The location is represented by a region of interest (ROI), which is a number provided by downstream clients like Sector Logic mapping to $\eta-\phi$ space. The quality of the trigger is represented by the difference in angle a \textit{local} fit of the trigger ART hits and a \textit{global} fit. A \textit{local} fit is performed on only the ART hits, and a \textit{global} fit is performed with the constraint that the trigger be consistent with the interaction point. The difference is called $\Delta\theta$.
 
-The location of the trigger is derived in a Cartesian $m_x-m_y$ space, where $\hat{y}$ points perpendicular to the direction of the $X$-strips, $\hat{x}$ points parallel to the $X$-strips, and $m_i$ is the slope $i/z$\footnote{We apologize for the confusing notation. To recap: $X$, $U$, and $V$ denote different layers of micromegas. $x$, $y$, and $z$ are cartesian coordinates. The $X$-layers measure $m_X$, which is used to derive $m_y$.}. $m_y$ is measured as the average of slopes measured in each $X$-plane, $\overline{m_X}$. $m_x$ is measured as the difference between slopes measured in the $U$ and $V$ planes, with a geometric factor from the angle of the stereo strips: $\frac{m_U - m_V}{2\ \text{tan}(\theta_\text{stereo})}$. The standard ATLAS coordinates $\eta$, $\phi$ can be derived directly from $m_x$, $m_y$, where the resolution of $\eta$ ($\phi$) is dominated by the resolution of $m_y$ ($m_x$). Rather than calculate $\eta$, $\phi$, however, the slopes $m_i$ are sent as an address to a LUT which returns a ROI.
+The location of the trigger is derived in a Cartesian $m_x-m_y$ space, where $\hat{y}$ points perpendicular to the direction of the $X$-strips, $\hat{x}$ points parallel to the $X$-strips, and $m_i$ is the slope $i/z$. $m_y$ is measured as the average of slopes measured in each $X$-plane, $\overline{m_X}$. $m_x$ is measured as the difference between slopes measured in the $U$ and $V$ planes, with a geometric factor from the angle of the stereo strips: $\frac{m_U - m_V}{2\ \text{tan}(\theta_\text{stereo})}$. The standard ATLAS coordinates $\eta$, $\phi$ can be derived directly from $m_x$, $m_y$, where the resolution of $\eta$ ($\phi$) is dominated by the resolution of $m_y$ ($m_x$). Rather than calculate $\eta$, $\phi$, however, the slopes $m_i$ are sent as an address to a LUT which returns a ROI.\footnote{We apologize for the confusing notation. To recap: $X$, $U$, and $V$ denote different layers of micromegas. $x$, $y$, and $z$ are cartesian coordinates. The $X$-layers measure $m_X$, which is used to derive $m_y$. And so on.}
 
-To calculate the quality of a trigger, the fitter compares the slopes of a linear fit of the ART data with and without a constraint that it originate at the interaction point. These are referred to as \textit{global} and \textit{local} slopes, respectively, and they only use hits from the $X$-planes. The global slope is simply the aforementioned $m_y$, or $\overline{m_X}$. The local slope is calculated as $m_x^\text{local} = \sum c_i \ y_i$, where the sum includes all $X$ hits, $c_i$ is a constant depending on which $X$-planes are used in the fit, and $y_i$ is the position of the hit. $c_i$ is stored in a LUT, and the multiplication/addition is performed by the FPGA. This analytic ``fit'' gives the slope of the least-squares line. The difference in angles $\Delta\theta$ can be calculated directly from $m_x^\text{local}$, $m_x^\text{global}$, but instead these slopes are sentas an address to a LUT which returns $\Delta\theta$.
+To calculate the quality of a trigger, the fitter compares the slopes of a linear fit of the ART data with and without a constraint that it originate at the interaction point. These are referred to as \textit{global} and \textit{local} slopes, respectively, and they only use hits from the $X$-planes. The global slope is simply the aforementioned $m_y$, or $\overline{m_X}$. The local slope is calculated as $m_x^\text{local} = \sum c_i \ y_i$, where the sum includes all $X$ hits, $c_i$ is a constant depending on which $X$-planes are used in the fit, and $y_i$ is the position of the hit. $c_i$ is stored in a LUT, and the multiplication/addition is performed by the FPGA. This analytic ``fit'' gives the slope of the least-squares line, and is more appealing than an iterative fit given the hardware constraints. The difference in angles $\Delta\theta$ can be calculated directly from $m_x^\text{local}$, $m_x^\text{global}$, but instead these slopes are sentas an address to a LUT which returns $\Delta\theta$.
 
 \subsection{Output}
 \label{sec:alg-output}
+
+The MM TP will send its triggers to the sTGC trigger processor FPGA, where duplicates will be discarded before being sent to downstream clients. The NSW TP in total will send at most 8 triggers per BC per sector. Each trigger will be composed of 24 bits, and presently the bits are allocated as 5 bits for $\Delta\theta$; 5 bits for $\phi$ ROI; 8 bits for $\theta$ ROI; and 6 spare bits.
+
+\subsection{Adjustments for cosmic muons}
+\label{sec:alg-crts}
+
+The use of \textit{slopes} instead of \textit{strips} in the algorithm is motivated by the knowledge that particles arriving at the NSW from a proton-proton collision should travel in a nearly straight line. Thus, each layer of MM will record a different strip address for the incident particle, but a nearly identical slope. This simplifies logic for defining spatial \textit{slope-roads} in the MM chamber.
+
+However, for a cosmic ray test stand, the exact origin of incident particles is unknown. The MM TP algorithm is then modified to use strip addresses instead of slopes for the defintion of roads, as discussed in Section~\ref{sec:alg-finder}. The implementation of strip-to-slope conversion in the FPGA is nonetheless tested by multiplying each strip address by 1, instead of $1/z_\text{strip}$, to calculate a ``slope'' which is suitable for spatial coincidences of cosmic muons. Using strips instead of slopes is the largest conceptual difference between the ATLAS implementation and the cosmic muon implementation of the algorithm, and it will be relevant for the analysis in Section~\ref{sec:perf}.
+
+Additional adjustments to the MM TP algorithm for use at the cosmic ray test stand include:
+
+\begin{itemize}
+  \item The overall chamber offset from the beamline is removed, though the machinery of adjusting the overall offset is kept
+  \item Plane-specific offsets from the beamline are essentially removed, though the machinery of adjusting the global strip is kept
+  \item The number of neighboring roads considered for each road in the finder is 2 for $X$ and $UV$ planes, whereas for ATLAS it is 2 (5) for $X$ ($UV$)
+  \item The constants $c_i$ of the local slope calculation depend on the geometry of the octuplet, and are adjusted for the mini-octuplet
+  \item Offline, the precision coordinate of the MM TP is referred to as $x$, and the non-precision coordinate is $y$, because we found it confusing otherwise.
+\end{itemize}
 
 Finally, the MM TP algorithm stores copies of the input ART data and output trigger data in FIFO buffers, which are transmitted as UDP packets via ethernet to a computer for analysis.
 
@@ -81,4 +91,5 @@ Finally, the MM TP algorithm stores copies of the input ART data and output trig
 
 By January 2017, the MM TP algorithm had been implemented in firmware and successfully created triggers in behavioral simulation. By summer 2017, the MM TP algorithm is implemented on a FPGA and records hundreds of thousands of cosmic muon triggers per day. Many bugs were uncovered along the way.
 
+\textbf{Put some bugs here.}
 
