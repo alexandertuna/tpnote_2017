@@ -1,10 +1,14 @@
 \section{Performance}
 \label{sec:perf}
 
-The MMTP performs admirably.
+The performance of the ART and MM TP in this note is described relative to the full MMFE8 and scintillator readout, which is to say, the efficiency and resolution is not measured absolutely. For each cosmic muon event, the scintillator is required to have good data quality, and the full MMFE8 readout is required to record a track with at least two clusters in the $X$-planes on opposite quadruplets and at least two clusters in the stereo planes. Every event passing this criteria should create a trigger in the MM TP.
 
-\subsection{Low-level performance}
-\label{sec:perf-simple}
+\subsection{Basic performance}
+\label{sec:perf-basic}
+
+The MM TP shows excellent efficiency for finding a trigger given the criteria described above. Figure~\ref{fig:lowlevel} shows the efficiency for finding a trigger as a function of time (left) and the number of hits in the trigger as a function of time (right). Both figures indicate stable performance throughout the run.
+
+The triggers created by the MM TP are also in good agreement with the expectation from the full MMFE8 readout, as shown in Figure~\ref{fig:lowlevel}. The angular distribution (right) is nearly identical between the MM TP and the MMFE8s, where the angle of the MM TP is the angle evaluated in the FPGA, and the angle of the MMFE8 track is the angle calculated offline. The hit multiplicity (left) is similar between the MM TP and the MMFE8s, though on average the MM TP records fewer hits per track. This is due to the 7 BC collection window discussed in Section~\ref{sec:alg-finder}. Occasionally, this window is still not large enough, and an ART hit arrives too late to be considered for the trigger. The collection window is also likely the cause of the sub-percent inefficiency observed in Figure~\ref{fig:lowlevel}.
 
 \begin{figure}[!htpb]
   \begin{center}
@@ -26,8 +30,25 @@ The MMTP performs admirably.
   \label{fig:tp_vs_fe}
 \end{figure}
 
-\subsection{Roads}
+\subsection{Offline roads}
 \label{sec:perf-roads}
+
+An additional trigger quality requirement is considered when measuring the resolution of the MM TP. As discussion in Section~\ref{sec:alg-finder}, the road size configured in the FPGA is 1 VMM, or effectively 3 VMMs when including neighboring roads. This allows muons with large incident angle to form triggers in the MM TP, but it is also vulnerable to background hits since the effective road is much larger than needed for a downward-going muon. This vulnerability is less relevant for the NSW implementation of the algorithm because it will use \textit{slope-roads}, which is equivalent to only triggering on downward-going muons when using simple, strip-based roads.
+
+To avoid this vulnerability, the resolution measured is presented in two ways. First, the resolution measured by the MM TP is shown unadulterated. Second, the resolution is shown for triggers which satisfy \textit{offline roads}, to emulate the slope-roads of the NSW implementation. Offline roads are defined relative to the reference track of the full MMFE8 readout. The position of this track is evaluated at each layer, and a road is created around this position. The offline roads in this note are defined as 16 strips (1/4 VMM), with neighbors on either side, which is approximately the size of the slope-roads suggested for the NSW. Therefore an ART hit on a given layer must be within 24 strips of the track to ``satisfy'' the road. A trigger is said to satisfy the offline road if all the hits of the trigger satisfy the road individually.
+
+An important caveat is that even slope-roads cannot be simply defined for stereo planes. Unlike horizontal strips, the slope of a stereo strip measured at one edge of the wedge is different than the slope measured at the other edge. The MM TP defines the slope of a stereo strip as the slope evaluated in the center of the wedge, and as the road size is made smaller, it can become inefficient for tracks traversing the wedge near the edges. Therefore the road size for stereo planes must be larger than for horizontal planes.
+
+In this note, the offline stereo road is made larger by approximately the amount which will be needed at the NSW.
+
+\begin{figure}[!htpb]
+  \begin{center}
+    \includegraphics[width=1.0\textwidth]{figures/cartoons/stereo_roads.pdf}
+  \end{center}
+  \vspace{-10pt}
+  \caption{}
+  \label{fig:stereo_roads}
+\end{figure}
 
 \subsection{Spatial and angular resolution}
 \label{sec:perf-res}
