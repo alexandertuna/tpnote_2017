@@ -16,7 +16,7 @@ The micromegas readout paths includes three separate cards. The MMFE8 is the fro
 
 The ART Data Driver Card (ADDC) is a driver card for the micromegas trigger data path. It receives data from 4 MMFE8s over mini-SAS connections and packages this data into a single output for downstream clients. The card houses an FPGA for this purpose. There are 2 ADDCs in this experiment to receive data from the 8 MMFE8s.
 
-The Micromegas Trigger Process (MM TP) is the last card of the micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MM TP in this experiment to receive data from the 2 ADDCs.
+The Micromegas Trigger Process (MMTP) is the last card of the micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MMTP in this experiment to receive data from the 2 ADDCs.
 
 Additionally, a board was built at Harvard for the purpose of operating the MMFE8s synchronously, referred to as the clock/trigger board. This board sends a 40 MHz clock to all 8 boards, which are used by each board as a mother clock, thereby synchronizing them. The board also receives trigger signals from the scintillator and distributes them to the MMFE8s, as discussed in Section~\ref{sec:exp-mmfe}.
 
@@ -29,7 +29,7 @@ The VMM has two operating modes for the ART: at-threshold and at-peak. These mod
 
 The VMM sends ART data over mini-SAS cables to the ART Data-Driver Card (ADDC), which collects ART signals from 4 MMFE8 and packages them into a single output. The ART data bypasses the MMFE8 readout chip entirely. The data in this note are taken with ADDC V1, in which the ADDC has an on-board FPGA for collecting and packaging the incoming signals. The final version of the ADDC will have an on-board ASIC for this purpose, since it will be mounted in the ATLAS cavern and must be radiation tolerant. However, the functionality of the FGPA-based and ASIC-based ADDC are expected to be identical.
 
-The ADDC then sends the packaged ART data to the micromegas trigger processor (MM TP). The communication protocol is ``GBT'', which is developed at CERN and used by many experiments, and sent over fiber optic cables. The MM TP collects ART signals, analyzes them for patterns resembling a trigger, and sends trigger information to downstream clients. These steps are performed by an FPGA. The data in this note are taken with an implementation of the MM TP on a Xilinx VC707 development board with a Virtex-7 FPGA.
+The ADDC then sends the packaged ART data to the micromegas trigger processor (MMTP). The communication protocol is ``GBT'', which is developed at CERN and used by many experiments, and sent over fiber optic cables. The MMTP collects ART signals, analyzes them for patterns resembling a trigger, and sends trigger information to downstream clients. These steps are performed by an FPGA. The data in this note are taken with an implementation of the MMTP on a Xilinx VC707 development board with a Virtex-7 FPGA.
 
 In this setup, 2 ADDCs are placed near the detector and accept ART signals from the 8 MMFE8s. The VC707 is placed further from the detector in a counting room, along with the DAQ computer and scintillator readout electronics. It accepts signals from both ADDCs.
 
@@ -43,5 +43,5 @@ The scintillator trigger is formed with a coincidence of six signals correspondi
 \subsubsection{Scintillator timestamp}
 \label{sec:exp-scitime}
 
-Additionally, there is a connection between the scintillator electronics and the MM TP, to utilize the fast internal clocks of the MM TP FPGA. The scintillator trigger signal is sent directly to the MM TP, which captures the signal using a 640 MHz clock and forwards this timestamp to the DAQ computer over ethernet. This is referred to as the \textit{scintillator timestamp}. It provides a more accurate reference time than the scintillator BCID captured by the MMFE8s, since the 640 MHz clock of the MM TP allows for $\sim\!1.56$ ns resolution, versus the $\sim\!25$ ns resolution of the 40 MHz clock.
+Additionally, there is a connection between the scintillator electronics and the MMTP, to utilize the fast internal clocks of the MMTP FPGA. The scintillator trigger signal is sent directly to the MMTP, which captures the signal using a 640 MHz clock and forwards this timestamp to the DAQ computer over ethernet. This is referred to as the \textit{scintillator timestamp}. It provides a more accurate reference time than the scintillator BCID captured by the MMFE8s, since the 640 MHz clock of the MMTP allows for $\sim\!1.56$ ns resolution, versus the $\sim\!25$ ns resolution of the 40 MHz clock.
 

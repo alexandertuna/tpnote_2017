@@ -1,23 +1,23 @@
-\section{MM TP Algorithm}
+\section{MMTP Algorithm}
 \label{sec:alg}
 
-The MM TP algorithm and performance is described in detail elsewhere~\cite{brian,steve}. The algorithm is reviewed in brief here, and adjustments needed to operate the MM TP with a cosmic muon detector are highlighted.
+The MMTP algorithm and performance is described in detail elsewhere~\cite{brian,steve}. The algorithm is reviewed in brief here, and adjustments needed to operate the MMTP with a cosmic muon detector are highlighted.
 
-The MM TP algorithm is designed to receive ART data from the ADDC, decode the data, group the data into subsets (``triggers'') which satisfy a spatial and temporal coincidence, and calculate quantities which describe these triggers. The first step is referred to as the \textit{decoder}, the second step is referred to as the \textit{finder}, and the third step is referred to as the \textit{fitter}.
+The MMTP algorithm is designed to receive ART data from the ADDC, decode the data, group the data into subsets (``triggers'') which satisfy a spatial and temporal coincidence, and calculate quantities which describe these triggers. The first step is referred to as the \textit{decoder}, the second step is referred to as the \textit{finder}, and the third step is referred to as the \textit{fitter}.
 
-The MM TP algorithm is written in firmware and placed on a Xilinx Virtex-7 FPGA, which is housed by a VC707 evaluation board. The algorithm meets timing requirements for synthesis and implementation of the algorithm on the FPGA. Ultimately, the algorithm will be placed on a larger FPGA on a high-density optical mezzanine card (``HORX'') which will be housed in an ATCA shelf. The VC707 implementation is already capable of testing many aspects of the algorithm, however, including the steps mentioned above.
+The MMTP algorithm is written in firmware and placed on a Xilinx Virtex-7 FPGA, which is housed by a VC707 evaluation board. The algorithm meets timing requirements for synthesis and implementation of the algorithm on the FPGA. Ultimately, the algorithm will be placed on a larger FPGA on a high-density optical mezzanine card (``HORX'') which will be housed in an ATCA shelf. The VC707 implementation is already capable of testing many aspects of the algorithm, however, including the steps mentioned above.
 
 \subsection{Decoding}
 \label{sec:alg-decode}
 
-ART data is transmitted from the ADDC to the MM TP using the GBT protocol via optical fibers. The data is transmitted as one 128-bit word per BC per ADDC. 12 bits describe the BCID; 32 bits describe which of the 32 VMMs associated with one ADDC are transmitting an ART signal; 48 bits give a maximum of 8 ART strip numbers, which are 6 bits each; and the remaining bits are used for checking data quality, such as an 8-bit data parity word.
+ART data is transmitted from the ADDC to the MMTP using the GBT protocol via optical fibers. The data is transmitted as one 128-bit word per BC per ADDC. 12 bits describe the BCID; 32 bits describe which of the 32 VMMs associated with one ADDC are transmitting an ART signal; 48 bits give a maximum of 8 ART strip numbers, which are 6 bits each; and the remaining bits are used for checking data quality, such as an 8-bit data parity word.
 
-After receiving the ART data, the MM TP converts the VMM and strip numbers into global strip numbers, also taking into consideration that some of the MM chambers are flipped relative to each other. For example, if an ART strip from VMM 5 is reported as strip number 30, the MM TP converts this to a global strip number of 350 ($5*64 + 30$). The units of the MM TP are strip pitches, and there is no conversion to a unit of meters. The MM TP then adds the distance from the beamline to the base of the MM chamber, in units of strips, to the global strip number, and divides the global strip number by the $z$-position of the chamber, to convert the strip to a slope, $x_\text{strip} / z_\text{strip}$.
+After receiving the ART data, the MMTP converts the VMM and strip numbers into global strip numbers, also taking into consideration that some of the MM chambers are flipped relative to each other. For example, if an ART strip from VMM 5 is reported as strip number 30, the MMTP converts this to a global strip number of 350 ($5*64 + 30$). The units of the MMTP are strip pitches, and there is no conversion to a unit of meters. The MMTP then adds the distance from the beamline to the base of the MM chamber, in units of strips, to the global strip number, and divides the global strip number by the $z$-position of the chamber, to convert the strip to a slope, $x_\text{strip} / z_\text{strip}$.
 
 \subsection{Finder}
 \label{sec:alg-finder}
 
-Once the ART data is received and decoded, the next step of the MM TP algorithm is to filter the data into subsets which roughly look like an incident particle traversing the octuplet. This step is called the \textit{finder}.
+Once the ART data is received and decoded, the next step of the MMTP algorithm is to filter the data into subsets which roughly look like an incident particle traversing the octuplet. This step is called the \textit{finder}.
 
 The finder relies heavily on parallelization. A configurable number of roads are created in the FPGA to span the octuplet, and each roads evaluates in parallel whether is contains a sufficient number of ART strips to form a trigger. In this note, the road size is 1 road per VMM. This is demonstrated graphically in Figure~\ref{fig:cartoon_road_demo}.
 
@@ -49,12 +49,12 @@ The finder also requires hits for a trigger to be within a time window in units 
 
 The stipulation that a hit in a road on a board cannot be overwritten by a new hit is motivated by the behavior of the detector and the ART data-flow: an incident muon is expected to leave a signal on multiple strips on a board (making a ``cluster''), each strip of which can send an ART signal typically separated by a couple of BCs. Only the first hit from the cluster should be used for the trigger, hence the earlier hit should not be overwritten by subsequent nearby hits. 
 
-Every road is capable of forming one trigger per cycle of the BC clock. After evaluating all roads in parallel, the triggers created are placed in a priority encoder to be sent sequentially to the fitter for further calculations. The priority encoder sorts the triggers by road number, with smallest roads treated first. Because the MM TP clock is eight times faster than the BC clock, there can be at most eight triggers per BC.
+Every road is capable of forming one trigger per cycle of the BC clock. After evaluating all roads in parallel, the triggers created are placed in a priority encoder to be sent sequentially to the fitter for further calculations. The priority encoder sorts the triggers by road number, with smallest roads treated first. Because the MMTP clock is eight times faster than the BC clock, there can be at most eight triggers per BC.
 
 \subsection{Fitter}
 \label{sec:alg-fitter}
 
-The triggers found by the finder are then sent to the \textit{fitter}, which calculates quantities of interest for the trigger. The fitter presently does not create or remove any triggers. The final implementation of the MM TP algorithm may include a quality requirement from the fitter, namely $\Delta\theta < 15^\circ$.
+The triggers found by the finder are then sent to the \textit{fitter}, which calculates quantities of interest for the trigger. The fitter presently does not create or remove any triggers. The final implementation of the MMTP algorithm may include a quality requirement from the fitter, namely $\Delta\theta < 15^\circ$.
 
 For the NSW, the main deliverables of the fitter are the location and quality of a trigger. The location is represented by a region of interest (ROI), which is a number provided by downstream clients like Sector Logic mapping to $\eta-\phi$ space. The quality of the trigger is represented by the difference in angle a \textit{local} fit of the trigger ART hits and a \textit{global} fit. A \textit{local} fit is performed on only the ART hits, and a \textit{global} fit is performed with the constraint that the trigger be consistent with the interaction point. The difference is called $\Delta\theta$.
 
@@ -65,31 +65,31 @@ To calculate the quality of a trigger, the fitter compares the slopes of a linea
 \subsection{Output}
 \label{sec:alg-output}
 
-The MM TP will send its triggers to the sTGC trigger processor FPGA, where duplicates will be discarded before being sent to downstream clients. The NSW TP in total will send at most 8 triggers per BC per sector. Each trigger will be composed of 24 bits, and presently the bits are allocated as 5 bits for $\Delta\theta$; 5 bits for $\phi$ ROI; 8 bits for $\theta$ ROI; and 6 spare bits.
+The MMTP will send its triggers to the sTGC trigger processor FPGA, where duplicates will be discarded before being sent to downstream clients. The NSW TP in total will send at most 8 triggers per BC per sector. Each trigger will be composed of 24 bits, and presently the bits are allocated as 5 bits for $\Delta\theta$; 5 bits for $\phi$ ROI; 8 bits for $\theta$ ROI; and 6 spare bits.
 
 \subsection{Adjustments for cosmic muons}
 \label{sec:alg-crts}
 
 The use of \textit{slopes} instead of \textit{strips} in the algorithm is motivated by the knowledge that particles arriving at the NSW from a proton-proton collision should travel in a nearly straight line. Thus, each layer of MM will record a different strip address for the incident particle, but a nearly identical slope. This simplifies logic for defining spatial \textit{slope-roads} in the MM chamber.
 
-However, for a cosmic ray test stand, the exact origin of incident particles is unknown. The MM TP algorithm is then modified to use strip addresses instead of slopes for the defintion of roads, as discussed in Section~\ref{sec:alg-finder}. The implementation of strip-to-slope conversion in the FPGA is nonetheless tested by multiplying each strip address by 1, instead of $1/z_\text{strip}$, to calculate a ``slope'' which is suitable for spatial coincidences of cosmic muons. Using strips instead of slopes is the largest conceptual difference between the ATLAS implementation and the cosmic muon implementation of the algorithm, and it will be relevant for the analysis in Section~\ref{sec:perf}.
+However, for a cosmic ray test stand, the exact origin of incident particles is unknown. The MMTP algorithm is then modified to use strip addresses instead of slopes for the defintion of roads, as discussed in Section~\ref{sec:alg-finder}. The implementation of strip-to-slope conversion in the FPGA is nonetheless tested by multiplying each strip address by 1, instead of $1/z_\text{strip}$, to calculate a ``slope'' which is suitable for spatial coincidences of cosmic muons. Using strips instead of slopes is the largest conceptual difference between the ATLAS implementation and the cosmic muon implementation of the algorithm, and it will be relevant for the analysis in Section~\ref{sec:perf}.
 
-Additional adjustments to the MM TP algorithm for use at the cosmic ray test stand include:
+Additional adjustments to the MMTP algorithm for use at the cosmic ray test stand include:
 
 \begin{itemize}
   \item The overall chamber offset from the beamline is removed, though the machinery of adjusting the overall offset is kept
   \item Plane-specific offsets from the beamline are essentially removed, though the machinery of adjusting the global strip is kept
   \item The number of neighboring roads considered for each road in the finder is 2 for $X$ and $UV$ planes, whereas for ATLAS it is 2 (5) for $X$ ($UV$)
   \item The constants $c_i$ of the local slope calculation depend on the geometry of the octuplet, and are adjusted for the mini-octuplet
-  \item Offline, the precision coordinate of the MM TP is referred to as $x$, and the non-precision coordinate is $y$, because we found it confusing otherwise.
+  \item Offline, the precision coordinate of the MMTP is referred to as $x$, and the non-precision coordinate is $y$, because we found it confusing otherwise.
 \end{itemize}
 
-Finally, the MM TP algorithm stores copies of the input ART data and output trigger data in FIFO buffers, which are transmitted as UDP packets via ethernet to a computer for analysis.
+Finally, the MMTP algorithm stores copies of the input ART data and output trigger data in FIFO buffers, which are transmitted as UDP packets via ethernet to a computer for analysis.
 
-\subsection{Bugs encountered}
-\label{sec:alg-bugs}
-
-By January 2017, the MM TP algorithm had been implemented in firmware and successfully created triggers in behavioral simulation. By summer 2017, the MM TP algorithm is implemented on a FPGA and records hundreds of thousands of cosmic muon triggers per day. Many bugs were uncovered along the way.
-
-\textbf{Put some bugs here.}
+% \subsection{Bugs encountered}
+% \label{sec:alg-bugs}
+%
+% By January 2017, the MMTP algorithm had been implemented in firmware and successfully created triggers in behavioral simulation. By summer 2017, the MMTP algorithm is implemented on a FPGA and records hundreds of thousands of cosmic muon triggers per day. Many bugs were uncovered along the way.
+%
+% \textbf{Put some bugs here.}
 

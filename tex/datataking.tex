@@ -3,9 +3,9 @@
 
 The data described in this note was taken from May 2017 until July 2017. Each continuous period of data-taking is referred to as a ``run'', and the runs are described in Table~\ref{tab:runs}. 
 
-The astute reader will notice there are many more MM TP events than MM FE events. There are three reasons for this. First, the MM TP sends data whenever the finder creates a trigger, whereas the MM FE only sends data when it receives a trigger signal from the scintillator. The MM TP then records many more triggers due to low energy cosmic muons, cosmic muons which miss the scintillators, and random noise which happens to satisfy the loosened trigger requirements. Run 3522 in particular observed more triggers from noise than the other runs. Second, the MM TP will typically make a handful of triggers for a single cosmic muon passing through the detector due to the overlapping roads. For example, a downward-going muon passing entirely through road 2 will make triggers in roads 1, 2, and 3. Third, if the incoming ART data is spread across many BCs, the MM TP will often make triggers on multiple BCs as the hits arrive. 
+The astute reader will notice there are many more MMTP events than MMFE events. There are three reasons for this. First, the MMTP sends data whenever the finder creates a trigger, whereas the MMFE only sends data when it receives a trigger signal from the scintillator. The MMTP then records many more triggers due to low energy cosmic muons, cosmic muons which miss the scintillators, and random noise which happens to satisfy the loosened trigger requirements. Run 3522 in particular observed more triggers from noise than the other runs. Second, the MMTP will typically make a handful of triggers for a single cosmic muon passing through the detector due to the overlapping roads. For example, a downward-going muon passing entirely through road 2 will make triggers in roads 1, 2, and 3. Third, if the incoming ART data is spread across many BCs, the MMTP will often make triggers on multiple BCs as the hits arrive. 
 
-These last two circumstances are an open issue of the firmware logic, and duplicates will likely need to be removed from the MM TP before being sent to the sTGC trigger processor. In this note, if many triggers are created by the MM TP to describe a single muon, the trigger with the most hits is chosen for analysis.
+These last two circumstances are an open issue of the firmware logic, and duplicates will likely need to be removed from the MMTP before being sent to the sTGC trigger processor. In this note, if many triggers are created by the MMTP to describe a single muon, the trigger with the most hits is chosen for analysis.
 
 Between Runs 3522 and 3527, two front-end cards were repaired and replaced on the detector. Therefore the data from Run 3522 is presented as the default performance in Section~\ref{sec:perf}, whereas the data from Runs 3527, 3528, and 3530 are used for comparing the performance for different integration times in Section~\ref{sec:perf-integ}
 
@@ -27,13 +27,13 @@ Between Runs 3522 and 3527, two front-end cards were repaired and replaced on th
 % \subsection{Monitoring}
 % \label{sec:data-mon}
 
-\subsection{Readout errors}
-\label{sec:data-errors}
+% \subsection{Readout errors}
+% \label{sec:data-errors}
 
 \subsection{Combining data streams}
 \label{sec:data-streams}
 
-Three data streams are produced by the MM TP and written to disk, in addition to the scintillator and MMFE data streams. Two of the MM TP streams are written when a trigger is found. First, the trigger itself is output, which includes a BCID of the trigger, the ART hits of the trigger, and the quantities describing the trigger which are produced by the fitter. Second, all of the incoming ART hits in a window of 15 BCs around the trigger are output. The BCIDs of the hits used by the trigger are extracted from the second stream, and it is additionally useful for debugging the behavior of the algorithm offline. The third stream is independent of the algorithm, and it writes a 16-bit BCID to disk whenever it receives a trigger from the scintillator. This stream runs on a 640 MHz clock and allows for offline comparison of the TP trigger BCID to the scintillator BCID in steps of 1.56 ns.
+Three data streams are produced by the MMTP and written to disk, in addition to the scintillator and MMFE data streams. Two of the MMTP streams are written when a trigger is found. First, the trigger itself is output, which includes a BCID of the trigger, the ART hits of the trigger, and the quantities describing the trigger which are produced by the fitter. Second, all of the incoming ART hits in a window of 15 BCs around the trigger are output. The BCIDs of the hits used by the trigger are extracted from the second stream, and it is additionally useful for debugging the behavior of the algorithm offline. The third stream is independent of the algorithm, and it writes a 16-bit BCID to disk whenever it receives a trigger from the scintillator. This stream runs on a 640 MHz clock and allows for offline comparison of the TP trigger BCID to the scintillator BCID in steps of 1.56 ns.
 
-All streams are synchronized and combined offline by comparing the machine time of their respective DAQ scripts as they are written to disk. The second MM TP trigger stream is additionally required to contain all of the hits recorded in the first MM TP stream.
+All streams are synchronized and combined offline by comparing the machine time of their respective DAQ scripts as they are written to disk. The second MMTP trigger stream is additionally required to contain all of the hits recorded in the first MMTP stream.
 
