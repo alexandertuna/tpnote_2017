@@ -12,7 +12,17 @@ The micromegas readout paths includes three separate cards. The MMFE8 is the fro
 
 The ART Data Driver Card (ADDC) is a driver card for the micromegas trigger data path. It receives data from 4 MMFE8s over mini-SAS connections and packages this data into a single output for downstream clients. The card houses an FPGA for this purpose. There are 2 ADDCs in this experiment to receive data from the 8 MMFE8s.
 
-The Micromegas Trigger Process (MMTP) is the last card of the micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MMTP in this experiment to receive data from the 2 ADDCs.
+The Micromegas Trigger Process (MMTP) is the last card of the micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MMTP in this experiment to receive data from the 2 ADDCs. An ADDC V1 and the VC707 are shown in Figure~\ref{fig:cards}.
+
+\begin{figure}[!htpb]
+  \begin{center}
+    \includegraphics[width=0.45\textwidth]{figures/photos/IMG_0840.JPG}
+    \includegraphics[width=0.45\textwidth]{figures/photos/IMG_0836.JPG}
+  \end{center}
+  \vspace{-10pt}
+  \caption{An FPGA-based ADDC V1 on the bench (left) and the MMTP placed on a VC707 FPGA evaluation board (right) in the laboratory.}
+  \label{fig:cards}
+\end{figure}
 
 Additionally, a board was built at Harvard for the purpose of operating the MMFE8s synchronously, referred to as the clock/trigger board. This board sends a 40 MHz clock to all 8 boards, which are used by each board as a mother clock, thereby synchronizing them. The board also receives trigger signals from the scintillator and distributes them to the MMFE8s, as discussed in Section~\ref{sec:exp-mmfe}. A cartoon schematic of the electronics is shown in Figure~\ref{fig:cartoon_elx}.
 
