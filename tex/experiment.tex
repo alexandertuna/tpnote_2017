@@ -8,11 +8,11 @@ Three layers of scintillators with PMTs for light detection are placed above, on
 \subsection{Electronics}
 \label{sec:exp-elx}
 
-The micromegas readout paths includes three separate cards. The MMFE8 is the front-end readout card, and it houses 8 VMM2 ASICs per card. These readout chips receive signals from the detector and digitize them, and they are discussed in great detail elsewhere~\cite{nswtdr,noisy,noiseless}. The MMFE8 also houses an FPGA for configuring and reading out the VMMs over ethernet. The experiment in this note has 8 layers of micromegas detectors and therefore 8 MMFE8s.
+The micromegas readout paths in this note include three cards. The MMFE8 is the front-end readout card, and it houses 8 VMM2 ASICs per card. These readout chips receive signals from the detector and digitize them, and they are discussed in great detail elsewhere~\cite{nswtdr,noisy,noiseless}. The MMFE8 also houses an FPGA for configuring and reading out the VMMs over ethernet. The experiment in this note has 8 layers of micromegas detectors and therefore 8 MMFE8s.
 
 The ART Data Driver Card (ADDC) is a driver card for the micromegas trigger data path. It receives data from 4 MMFE8s over mini-SAS connections and packages this data into a single output for downstream clients. The card houses an FPGA for this purpose. There are 2 ADDCs in this experiment to receive data from the 8 MMFE8s.
 
-The Micromegas Trigger Process (MMTP) is the last card of the micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MMTP in this experiment to receive data from the 2 ADDCs. An ADDC V1 and the VC707 are shown in Figure~\ref{fig:cards}.
+The Micromegas Trigger Process (MMTP) is the last card of the micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MMTP in this experiment to receive data from the 2 ADDCs. An ADDC V1 and a prototype MMTP are shown in Figure~\ref{fig:cards}.
 
 \begin{figure}[!htpb]
   \begin{center}
@@ -42,16 +42,16 @@ The micromegas trigger data path begins at the VMM. The data path is referred to
 
 The VMM has two operating modes for the ART: at-threshold and at-peak. These modes describe the time at which an ART signal is sent by the VMM. Threshold mode is faster than peak mode because the VMM sends the signal as soon as a threshold is crossed, instead of waiting until a peak is found. The data in this note are taken with the ART operating at threshold.
 
-The VMM sends ART data over mini-SAS cables to the ART Data-Driver Card (ADDC), which collects ART signals from 4 MMFE8 and packages them into a single output. The ART data bypasses the MMFE8 readout chip entirely. The data in this note are taken with ADDC V1, in which the ADDC has an on-board FPGA for collecting and packaging the incoming signals. The final version of the ADDC will have an on-board ASIC for this purpose, since it will be mounted in the ATLAS cavern and must be radiation tolerant. However, the functionality of the FGPA-based and ASIC-based ADDC are expected to be identical.
+The VMM sends ART data over mini-SAS cables to the ART Data-Driver Card (ADDC), which collects ART signals from 4 MMFE8 and packages them into a single output. The ART data bypasses the MMFE8 readout chip entirely. The data in this note are taken with ADDC V1, in which the ADDC has an on-board FPGA for collecting and packaging the incoming signals. The final version of the ADDC will have on-board ASICs for this purpose, since it will be mounted in the ATLAS cavern and must be radiation tolerant. However, the functionality of the FGPA-based and ASIC-based ADDC are expected to be identical.
 
-The ADDC then sends the packaged ART data to the micromegas trigger processor (MMTP). The communication protocol is ``GBT'', which is developed at CERN and used by many experiments, and sent over fiber optic cables. The MMTP collects ART signals, analyzes them for patterns resembling a trigger, and sends trigger information to downstream clients. These steps are performed by an FPGA. The data in this note are taken with an implementation of the MMTP on a Xilinx VC707 development board with a Virtex-7 FPGA.
+The ADDC then sends the packaged ART data to the micromegas trigger processor (MMTP). The communication protocol is ``GBT'', which was developed at CERN as a radiation hard bi-directional optical link for LHC upgrades. The signals are sent over fiber optic cables. The MMTP collects ART signals, analyzes them for patterns resembling a trigger, and sends trigger information to downstream clients. These steps are performed by an FPGA. The data in this note are taken with an implementation of the MMTP on a Xilinx VC707 development board with a Virtex-7 FPGA.
 
 In this setup, 2 ADDCs are placed near the detector and accept ART signals from the 8 MMFE8s. The VC707 is placed further from the detector in a counting room, along with the DAQ computer and scintillator readout electronics. It accepts signals from both ADDCs.
 
 \subsection{MMFE8 and scintillator data path}
 \label{sec:exp-mmfe}
 
-The MMFE8 and scintillator data paths are described in detail elsewhere~\cite{noisy,noiseless}. In brief, the DAQ computer communicates directly with the MMFE8s over ethernet connection. The full MMFE8 readout includes charge and time information for each strip above threshold in the form of PDO, TDO, and BCID. The MMFE8 only sends data over ethernet after it has received a trigger signal from the scintillator. The signal is sent from the scintillator to the clock/trigger board over coaxial cable with BNC connections, and the clock/trigger board sends this signal to the 8 MMFE8s over microHDMI.
+The MMFE8 and scintillator data paths are described in detail elsewhere~\cite{noisy,noiseless}. In brief, the DAQ computer communicates directly with the MMFE8s over ethernet connection. The full MMFE8 readout includes charge and time information for each strip above threshold in the form of PDO, TDO, and BCID. The MMFE8 only sends data over ethernet after it has received a trigger signal from the scintillator. The signal is sent from the scintillator to the clock/trigger board over coaxial cable, and the clock/trigger board sends this signal to the 8 MMFE8s over microHDMI.
 
 The scintillator trigger is formed with a coincidence of six signals corresponding to the top, middle, and bottom scintillator counters. The signals are acquired by Lecroy TDC and sent to a CAMAC crate controller, which then sends its data over ethernet to the DAQ computer.
 
