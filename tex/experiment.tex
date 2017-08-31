@@ -1,23 +1,23 @@
 \section{Experiment}
 \label{sec:exp}
 
-The micromegas and scintillator detectors of the Harvard cosmic ray test stand are described in detail in previous notes presenting the performance of the full MMFE8 readout~\cite{noisy,noiseless}. Eight layers of micromegas detectors are stacked vertically for the purpose of providing eight measurements of the position of a cosmic muon as it travels through the experiment. The readout strips of each layer have a pitch of 0.4 mm, and they are arranged as designed for the NSW: $XXUVUVXX$, where strips in the $X$ planes run perpendicular to the readout edge of the chamber, and strips in the $U$ ($V$) planes are tilted at an angle of $1.5^\circ$ ($-1.5^\circ$) to provide a measurement of the non-precision coordinate. Each layer of micromegas is 20 cm by 20 cm.
+The Micromegas and scintillator detectors of the Harvard cosmic ray test stand are described in detail in previous notes presenting the performance of the full MMFE8 readout~\cite{noisy,noiseless}. Eight layers of Micromegas detectors are stacked vertically for the purpose of providing eight measurements of the position of a cosmic muon as it travels through the experiment. The readout strips of each layer have a pitch of 0.4 mm, and they are arranged as designed for the NSW: $XXUV-UVXX$, where strips in the $X$ planes run perpendicular to the readout edge of the chamber, and strips in the $U$ ($V$) planes are tilted at an angle of $1.5^\circ$ ($-1.5^\circ$) to provide a measurement of the non-precision coordinate. Each Micromegas layer is 20 cm by 20 cm.
 
-Three layers of scintillators with PMTs for light detection are placed above, on top of, and below the micromegas to provide a trigger for the full MMFE8 readout. A scintillator trigger is formed when all three layers of scintillator detect a coincidence. There is $\sim\!2\!-\!3$ meters of concrete between the micromegas and the bottom scintillator to filter low-energy particles.
+Three layers of scintillators with PMTs are placed above, on top of, and below the Micromegas to provide a trigger for the full MMFE8 readout. A scintillator trigger is formed when all three layers of scintillator detect a coincidence. There is $\sim\!2\!-\!3$ meters of concrete between the Micromegas and the bottom scintillator to filter out low-energy particles.
 
 \subsection{Electronics}
 \label{sec:exp-elx}
 
-The micromegas readout paths in this note include three cards. The MMFE8 is the front-end readout card, and it houses 8 VMM2 ASICs per card. These readout chips receive signals from the detector and digitize them, and they are discussed in great detail elsewhere~\cite{nswtdr,noisy,noiseless}. The MMFE8 also houses an FPGA for configuring and reading out the VMMs over ethernet. The experiment in this note has 8 layers of micromegas detectors and therefore 8 MMFE8s.
+The Micromegas readout paths in this note include three cards. The MMFE8 is the front-end readout card, and it houses 8 VMM2 ASICs per card. These readout chips receive signals from the detector and digitize them, and they are discussed in great detail elsewhere~\cite{nswtdr,noisy,noiseless}. The MMFE8 prototype also houses an FPGA for configuring and reading out the VMMs over ethernet. The experiment in this note has 8 layers of Micromegas detectors with 512 channels each, and therefore 8 MMFE8s.
 
-The ART Data Driver Card (ADDC) is a driver card for the micromegas trigger data path. It receives data from 4 MMFE8s over mini-SAS connections and packages this data into a single output for downstream clients. The card houses an FPGA for this purpose. There are 2 ADDCs in this experiment to receive data from the 8 MMFE8s.
+The ART Data Driver Card (ADDC) is a driver card for the Micromegas trigger data path. It receives data from 4 MMFE8s over mini-SAS connections and packages this data into a single output for downstream clients. The card houses an FPGA for this purpose. There are 2 ADDCs in this experiment to receive data from the 8 MMFE8s.
 
-The Micromegas Trigger Process (MMTP) is the last card of the micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MMTP in this experiment to receive data from the 2 ADDCs. An ADDC V1 and a prototype MMTP are shown in Figure~\ref{fig:cards}.
+The Micromegas Trigger Process (MMTP) is the last card of the Micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MMTP in this experiment to receive data from the 2 ADDCs. An ADDC V1 and a prototype MMTP are shown in Figure~\ref{fig:cards}.
 
 \begin{figure}[!htpb]
   \begin{center}
-    \includegraphics[width=0.45\textwidth]{figures/photos/IMG_0840.JPG}
-    \includegraphics[width=0.45\textwidth]{figures/photos/IMG_0836.JPG}
+    \includegraphics[width=0.48\textwidth]{figures/photos/IMG_0840.JPG}
+    \includegraphics[width=0.48\textwidth]{figures/photos/IMG_0836.JPG}
   \end{center}
   \vspace{-10pt}
   \caption{An FPGA-based ADDC V1 on the bench (left) and the MMTP placed on a VC707 FPGA evaluation board (right) in the laboratory.}
@@ -38,13 +38,13 @@ Additionally, a board was built at Harvard for the purpose of operating the MMFE
 \subsection{Trigger data path}
 \label{sec:exp-art}
 
-The micromegas trigger data path begins at the VMM. The data path is referred to as the Address in Real Time (ART) data path, which refers to the output of the VMM. The full readout can include many strips per BC, and each strip read out includes lots of information about the strip, including charge (PDO) and time (BCID, TDO). Alternatively, the trigger readout sends the data from at most one strip per BC, and it only includes the address of the strip. This is the crux of the trigger data path; the bandwidth of the trigger data path is greatly reduced relative to the full readout. One bit is used to announce a hit is recorded, and six bits are used for the address.
+The Micromegas trigger data path begins at the VMM. The data path is referred to as the Address in Real Time (ART) data path, which refers to the output of the VMM. The full MMFE8 readout can include many strips per BC, and each strip read out includes lots of information about the strip, including charge (PDO) and time (BCID, TDO). Alternatively, the ART data path sends the data from at most one strip per BC, and it only includes the address of the strip. This is the crux of the trigger data path; the bandwidth of the trigger data path is greatly reduced relative to the full readout. One bit is used to announce a hit is recorded, and six bits are used for the address.
 
 The VMM has two operating modes for the ART: at-threshold and at-peak. These modes describe the time at which an ART signal is sent by the VMM. Threshold mode is faster than peak mode because the VMM sends the signal as soon as a threshold is crossed, instead of waiting until a peak is found. The data in this note are taken with the ART operating at threshold.
 
 The VMM sends ART data over mini-SAS cables to the ART Data-Driver Card (ADDC), which collects ART signals from 4 MMFE8 and packages them into a single output. The ART data bypasses the MMFE8 readout chip entirely. The data in this note are taken with ADDC V1, in which the ADDC has an on-board FPGA for collecting and packaging the incoming signals. The final version of the ADDC will have on-board ASICs for this purpose, since it will be mounted in the ATLAS cavern and must be radiation tolerant. However, the functionality of the FGPA-based and ASIC-based ADDC are expected to be identical.
 
-The ADDC then sends the packaged ART data to the micromegas trigger processor (MMTP). The communication protocol is ``GBT'', which was developed at CERN as a radiation hard bi-directional optical link for LHC upgrades. The signals are sent over fiber optic cables. The MMTP collects ART signals, analyzes them for patterns resembling a trigger, and sends trigger information to downstream clients. These steps are performed by an FPGA. The data in this note are taken with an implementation of the MMTP on a Xilinx VC707 development board with a Virtex-7 FPGA.
+The ADDC then sends the packaged ART data to the Micromegas trigger processor (MMTP). The communication protocol is ``GBT'', which was developed at CERN as a radiation hard bi-directional optical link for LHC upgrades. The signals are sent over fiber optic cables. The MMTP collects ART signals, analyzes them for patterns resembling a trigger, and sends trigger information to downstream clients. These steps are performed by an FPGA. The data in this note are taken with an implementation of the MMTP on a Xilinx VC707 development board with a Virtex-7 FPGA.
 
 In this setup, 2 ADDCs are placed near the detector and accept ART signals from the 8 MMFE8s. The VC707 is placed further from the detector in a counting room, along with the DAQ computer and scintillator readout electronics. It accepts signals from both ADDCs.
 
@@ -58,5 +58,5 @@ The scintillator trigger is formed with a coincidence of six signals correspondi
 \subsection{Scintillator timestamp}
 \label{sec:exp-scitime}
 
-Additionally, there is a connection between the scintillator electronics and the MMTP, to utilize the fast internal clocks of the MMTP FPGA. The scintillator trigger signal is sent directly to the MMTP, which captures the signal using a 640 MHz clock and forwards this timestamp to the DAQ computer over ethernet. This is referred to as the \textit{scintillator timestamp}. It provides a more accurate reference time than the scintillator BCID captured by the MMFE8s, since the 640 MHz clock of the MMTP allows for $\sim\!1.56$ ns resolution, versus the $\sim\!25$ ns resolution of the 40 MHz clock.
+Additionally, there is a connection between the scintillator electronics and the MMTP, to utilize the fast internal clocks of the MMTP FPGA. The scintillator trigger signal is sent directly to the MMTP, which captures the signal using a 640 MHz clock and forwards this timestamp to the DAQ computer over ethernet. This is referred to as the \textit{scintillator timestamp}. It provides a more accurate reference time than the scintillator BCID~\cite{noisy} captured by the MMFE8s, since the 640 MHz clock of the MMTP allows for $\sim\!1.56$ ns resolution, versus the $\sim\!25$ ns resolution of the 40 MHz clock.
 
