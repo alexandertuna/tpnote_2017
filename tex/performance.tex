@@ -1,159 +1,206 @@
-\section{Performance}
+\section{MMTP Performance}
 \label{sec:perf}
-
-The performance of the ART and MMTP in this note is described relative to the full MMFE8 and scintillator readout, which is to say, the efficiency and resolution is not measured absolutely. For each cosmic muon event, the scintillator is required to have good data quality, and the full MMFE8 readout is required to record a track with at least two clusters in the $X$-planes on opposite quadruplets and at least two clusters in the stereo planes. Every event passing this criteria should create a trigger in the MMTP.
-
-\subsection{Basic performance}
-\label{sec:perf-basic}
-
-The MMTP shows excellent efficiency for finding a trigger given the criteria described above. Figure~\ref{fig:lowlevel} shows the efficiency for finding a trigger as a function of time (left) and the number of hits in the trigger as a function of time (right). Both figures indicate stable performance throughout the run.
-
-The triggers created by the MMTP are also in good agreement with the expectation from the full MMFE8 readout, as shown in Figure~\ref{fig:lowlevel}. The angular distribution (right) is nearly identical between the MMTP and the MMFE8s, where the angle of the MMTP is the angle evaluated in the FPGA, and the angle of the MMFE8 track is the angle calculated offline. The hit multiplicity (left) is similar between the MMTP and the MMFE8s, though on average the MMTP records fewer hits per track. This is due to the 7 BC collection window discussed in Section~\ref{sec:alg-finder}. Occasionally, this window is still not large enough, and an ART hit arrives too late to be considered for the trigger. The collection window is also likely the cause of the sub-percent inefficiency observed in Figure~\ref{fig:lowlevel}.
-
+We follow the method outlined in Sec.~\ref{sec:alg-resol} which uses a well reconstructed track which should provide a MMTP trigger.
+ Figure~\ref{fig:lowlevel}
+ shows the efficiency of the MMTP algorithm  and the number of hits generating a trigger as a function of time.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/tpeff.pdf}
     \includegraphics[width=0.48\textwidth]{figures/tuna_analysis/trigger_hits_vs_event.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The efficiency of a trigger to be matched to a full readout event versus time (left) and the number of hits in the trigger as a function of time (right). Both figures show stable data-taking.}
+  \caption{MMTP efficiency  (left) and the number of hits producing a trigger (right)
+ as a function of time.}
   \label{fig:lowlevel}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+In Fig.~\ref{fig:tp_vs_fe}, we compare the distribution of the muon angles of incidence as measured by the MMTP and offline using MMFE8 clusters, 
+as well as the number of MMTP hits and MMFE8 clusters used to reconstruct a muon track. 
+As discussed in Sec.~\ref{sec:alg-finder}, the $\simeq $ 0.3\% inefficiencies of the MMTP are due to the 8 BC window used by the finder.
 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.48\textwidth]{figures/tuna_analysis/trigger_nart.pdf}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/ang.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The number of hits in the MMTP and MM FE tracks (left) and the angle of the tracks (right). The track found by the trigger closely resembles the track found by the full readout, though with slightly fewer hits on average.}
+  \caption{Distribution of the number of hits and clusters in the MMTP and MM reconstructed tracks (left). 
+Distribution of the track's angle reconstructed by the MMTP
+ and offline using MM clusters (right).}
   \label{fig:tp_vs_fe}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Offline roads}
 \label{sec:perf-roads}
 
-An additional trigger quality requirement is considered when measuring the resolution of the MMTP. As discussion in Section~\ref{sec:alg-finder}, the road size configured in the FPGA is 1 VMM, or effectively 3 VMMs when including neighboring roads. This allows muons with large incident angle to form triggers in the MMTP, but it is also vulnerable to background hits since the effective road is much larger than needed for a downward-going muon. This vulnerability is less relevant for the NSW implementation of the algorithm because it will use \textit{slope-roads}, which is equivalent to only triggering on downward-going muons when using simple, strip-based roads.
+In order to cover the angular acceptance of our telecope, the MMTP algorithm uses 1 VMM  roads, and effectively
+ 3 VMM roads after including neighboring roads. 
+Because the rate of ART noise signals issued by each VMM ranges between 100 and 300 Hz, in our case accidentals triggers or accidental hits replacing
+good hits of a track are not an issue. In our case, the spatial resolution is largely degraded by $\delta$ rays
+ with energies as low as a few KeV, which in $\simeq$ 15\% of the events replace a
+correct  ART hit (see Fig.~\ref{fig:deltarays}).
 
-To avoid this vulnerability, the resolution measured is presented in two ways. First, the resolution measured by the MMTP is shown unadulterated. Second, the resolution is shown for triggers which satisfy \textit{offline roads}, to emulate the slope-roads of the NSW implementation. Offline roads are defined relative to the reference track of the full MMFE8 readout. The position of this track is evaluated at each layer, and a road is created around this position. The offline roads in this note are defined as 16 strips (1/4 VMM), with neighbors on either side, which is approximately the size of the slope-roads suggested for the NSW. Therefore an ART hit on a given layer must be within 24 strips of the track to ``satisfy'' the road. A trigger is said to satisfy the offline road if all the hits of the trigger satisfy the road individually.
-
-An important caveat is that even slope-roads cannot be simply defined for stereo planes. Unlike horizontal strips, the slope of a stereo strip measured at one edge of the wedge is different than the slope measured at the other edge. The MMTP defines the slope of a stereo strip as the slope evaluated in the center of the wedge, and as the road size is made smaller, it can become inefficient for tracks traversing the wedge near the edges. Therefore the road size for stereo planes must be larger than for horizontal planes.
-
-In this note, the offline stereo road is made larger by approximately the amount which will be needed at the NSW. This amount is smallest in the region closest to the beamline of the SM1 chamber, and largest in the region farthest from the beamline of the LM2 chamber, as shown in Figure~\ref{fig:stereo_roads}. This corresponds to 13 mm (or 33 strips) and 58 mm (or 144 strips), respectively. The two offline stereo roads in this note are then 1/4 VMM, with neighboring roads, plus either of these tolerances. Coincidentally, an offline road of 1/4 VMM with an extra 144 strips is 192 strips, or 3 VMMs, so no offline requirement is needed on top of the 1 VMM road required online by the FPGA.
-
-\begin{figure}[!htpb]
-  \begin{center}
-    \includegraphics[width=1.0\textwidth]{figures/cartoons/stereo_roads.pdf}
-  \end{center}
-  \vspace{-10pt}
-  \caption{A drawing of the Micromegas wedges with the dimensions specified by the NSW. The stereo strips require larger roads than the horizontal strips because they cover between 13 and 58 mm of the detector in the direction of the precision coordinate.}
-  \label{fig:stereo_roads}
-\end{figure}
-
-\subsection{Spatial and angular resolution}
-\label{sec:perf-res}
-
-The spatial resolutions measured with cosmic data are shown in Figures~\ref{fig:xres} and~\ref{fig:yres}. The $x$ resolution is measured as the difference between the average $x$ position of the trigger hits on the $X$ planes and the $x$ position of the fitted MMFE8 track evaluated at the average $z$ position of the trigger hits. Calculating the average of trigger $X$ hits corresponds directly to calculating the average of $X$ slopes at the NSW, also known as $m_X^\text{global}$, which dominates the $\eta$ measurement. The $y$ resolution is measured as the difference between the difference of average $x$ position of $U$ and $V$ planes, with the geometric factor $\frac{1}{2\ \text{tan}\theta_\text{st.}}$, and the $y$ position of the fitted MMFE8 track evalutated at the average $z$ position of the trigger stereo hits. The trigger $y$ measurement is adjusted to account for the slope of the track in the $x-z$ plane. Calculating the difference of the average trigger $U$ and $V$ hits corresponds directly to calculating the difference of the average $U$ and $V$ slopes at the NSW, also known as the non-precision slope, which dominates the $\phi$ measurement.
-
-The $x$ and $y$ resolution improves significantly when requiring tighter offline roads, as expected. The RMS of 0.4 mm (29.3 mm) for the $x$ ($y$) resolution is comparable to what is reported in the TDR. Even with offline roads, however, the distribution seems to reflect two populations of tracks, one sharply peaked at zero and one broadly peaked at zero. The broader distribution is likely caused by $\delta$-rays as the muon passes through the chamber. Two event displays of this feature are shown in Figure~\ref{fig:deltarays}. This motivates using the smallest possible road size at the NSW, for horizontal and stereo planes, to suppress both uncorrelated background hits (e.g. noise) and correlated background hits (e.g. $\delta$-rays).
-
-\begin{figure}[!htpb]
-  \begin{center}
-    \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_xres_full.pdf}
-    \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_xres.pdf}
-  \end{center}
-  \vspace{-10pt}
-  \caption{The $x$ resolution of the MMTP relative to the full readout, using 1-VMM online roads (left) and 1/4-VMM offline roads (right), as discussed in Section~\ref{sec:perf-roads}. The tails of the resolution are greatly suppressed with smaller roads.}
-  \label{fig:xres}
-\end{figure}
-
-\begin{figure}[!htpb]
-  \begin{center}
-    \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_yres_1road.pdf}
-    \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_yres_smallroad.pdf}
-  \end{center}
-  \vspace{-10pt}
-  \caption{The $y$ resolution of the MMTP relative to the full readout, using 1-VMM online roads (left) and 1/4-VMM offline roads (right), as discussed in Section~\ref{sec:perf-roads}. The tails of the resolution are greatly suppressed with smaller roads.}
-  \label{fig:yres}
-\end{figure}
-
+%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.48\textwidth]{figures/event_displays/display_02579.pdf}
     \includegraphics[width=0.48\textwidth]{figures/event_displays/display_08160.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{Two event displays likely to include delta rays. The black circles are clusters from the full MMFE8 readout, the black line is the fit to the clusters, and the red circles are the hits chosen by the MMTP. In both cases, the MMTP chooses hits from the delta ray.}
+  \caption{Display of two events with $\delta$ rays. The black points are MM clusters, 
+the black line is the fit to the clusters, and the red circles are the hits chosen by the MMTP. 
+We select these events by requiring that the difference between the $\theta$ angles reconstructed by the MMTP and offline 
+using MM cluster is larger than 10 mr.}
   \label{fig:deltarays}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ As the material in front of the NSW detector cannot be less than that in front of our octuplet,  $\delta$ rays will  represent an irreducible source
+ of performance degradation.  Of course, this effect is reduced when using smaller roads as is the case for the NSW algorithm which plans to use
+ 0.9 mr roads for $X$ planes,  corresponding to  1/4 VMM roads for our algorithm. 
+ 
+ For stereo planes, the NSW road size depends on the length of the Micromegas $x$ strips which ranges from 500 to 2200 cm as shown in
+ Fig.~\ref{fig:stereo_roads}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+ \begin{figure}[!htpb]
+  \begin{center}
+    \includegraphics[width=1.0\textwidth]{figures/cartoons/stereo_roads.pdf}
+  \end{center}
+  \vspace{-10pt}
+  \caption{Drawings of  Micromegas wedges with  dimensions as specified by the NSW TDR. The stereo strips require larger roads than the horizontal strips because they 
+overlap a band of $x$ strips of width from  13 to 58 mm.}
+  \label{fig:stereo_roads}
+\end{figure}
+ %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+For the shortest and longest readout strips, stereo roads need  additional 13 mm (or 32 strips) and 58 mm (144 strips) to cover just one $x$ strip, respectively.
+In the following, we first show resolutions using 1 VMM roads with neighbor roads. Then, we emulate the NSW roads using the 
+track direction provided by fitting MM cluster.
+For $X$ planes, the offline finder uses only ART hits which are at a distance of $\pm$ 24 strips from the intersection of the track with the plane (three 1/4 VMM roads).
+For $U,V$ planes, the road is increased by 32 up to 144 strips. The latter increase brings the road width back to the 3 VMMs required online.  
+These $X$ and stereo roads emulating the NSW algorithm will be referred to as XNSW, SNSW,  LNSW in the following.
+%\end{document}
+\subsection{Spatial and angular resolution}
+\label{sec:perf-res}
+Figures~\ref{fig:xres} to~\ref{fig:yres} show the  $x_{\rm TP}-x_{\rm MM}$ and $y_{\rm TP}-y_{\rm MM}$  distributions
+derived with the method in Sec.~\ref{sec:alg-resol}, respectively.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[!htpb]
+  \begin{center}
+    \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_xres_full.pdf}
+    \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_xres.pdf}
+  \end{center}
+  \vspace{-10pt}
+  \caption{Distributions of $x_{\rm TP}-x_{\rm MM}$  using (left) 1 VMM roads and (right) XNSW
+ roads (see text).}
+  \label{fig:xres}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[!htpb]
+  \begin{center}
+    \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_yres_1road.pdf}
+    \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_yres_smallroad.pdf}
+  \end{center}
+  \vspace{-10pt}
+  \caption{Distributions of $y_{\rm TP}-y_{\rm MM}$  using (left) 1 VMM or LNSW roads 
+ and (right) SNSW roads (see text).}
+  \label{fig:yres}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The angular resolution measured with cosmic data is shown in Figure~\ref{fig:thetares}. The $\theta$ resolution is measured as the difference between the slope calculated online by the MMTP FPGA and the slope of the fitted MMFE8 track, after converting each slope to an angle. The online slope is exactly the slope which will be calculated online at the NSW, also known as $m_X^\text{local}$. The resolution of $m_X^\text{local}$ dominates the resolution of $\Delta\theta$, which measures the consistency of the trigger with the interaction point. The measured $\theta$ resolution is comparable to what is reported in the TDR, and it improves similarly with smaller road sizes, as expected.
+ As expected, the large tails of the above distribution shrink with the road width.
+ The global angle resolution 0.43 mm/7.5 m = 0.06 mr is better than what required by the NSW TDR.
+  The $y$ resolution segments at $\pm 1 \sigma$ level the shortest  SM1 detector into 8  $\phi $ sectors and the longest LM2 detector
+ into 17 $\phi $ sectors. 
 
-The angular and spatial resolution are shown simultaneously in Figure~\ref{fig:xthetares}. There is a clear correlation between $x$ and $\theta$ in the case of MMTP measurements which disagree significantly with the full MMFE8 readout, since they are equally affected by background hits in the $X$ planes. In Figure~\ref{fig:xthetares} (left), the long tails are dominated by uncorrelated background hits (noise). In Figure~\ref{fig:xthetares} (right), the tails have contributions from uncorrelated (noise) and correlated ($\delta$-rays) background hits.
 
+ The distribution of $\theta_{\rm local}-\theta_{\rm MM} $ is plotted in Fig.~\ref{fig:thetares}.
+The correlation between angular and spatial resolution is shown by Fig.~\ref{fig:xthetares}.
+ The NSW TDR  calls for a 15 mr cut on the difference between  the global and local angles.
+ Because of $\delta$ rays, this cut  loses at least 4\% of good triggers. 
+  At the highest LHC luminosities, the rate per Micromegas strip is anticipated to be 
+ as large as 50 kHz per strip, almost independent on the distance from the beamline.
+ It seems plausible that accidental hits due to single rates will cause an even higher inefficiency of the
+ MMTP trigger if the $\Delta\theta$ cut is implemented.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_angres_full.pdf}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_angres.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The $\theta$ resolution of the MMTP relative to the full readout, using 1-VMM online roads (left) and 1/4-VMM offline roads (right), as discussed in Section~\ref{sec:perf-roads}. The tails of the resolution are greatly suppressed with smaller roads.}
+  \caption{Distribution of  $\theta_{\rm local}-\theta_{\rm MM} $ using  (left) 1VMM    and (right) XNSW  roads (see text). }
   \label{fig:thetares}
 \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_xres_angres_full.pdf}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/TP_xres_angres.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The $x$ and $\theta$ resolution of the MMTP relative to the full readout, using 1-VMM online roads (left) and 1/4-VMM offline roads (right), as discussed in Section~\ref{sec:perf-roads}. The tails of the resolution are greatly suppressed with smaller roads.}
+  \caption{2D plots of $\theta_{\rm local}-\theta_{\rm MM} $ vs  $x_{\rm TP}-x_{\rm MM}$
+   using 1-VMM online roads (left) and 1/4-VMM offline roads (right), 
+as discussed in Section~\ref{sec:perf-roads}. The tails of the resolution are greatly suppressed with smaller roads.}
   \label{fig:xthetares}
 \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Time resolution}
 
-The time resolution measured with cosmic data is shown in two ways. First, the timing of ART hits within a trigger are compared against themselves. Second, the timing is compared against the scintillator timestamp as a reference.
-
-As discussed in Section~\ref{sec:alg-finder}, the MMTP algorithm here collects ART hits in a window of 7 BCs. The measured \textit{BC window} per trigger is then defined as the number of BCs the algorithm actually needed to collect all the hits for a given trigger. For example, if all hits arrive at the same BC, the BC window is 1.
-
-Additionally, the time resolution of individual hits is measured by choosing all possible pairs of hits within a trigger and measuring the difference in their BCIDs. The resolution of this quantity is then related to the time resolution of individual hits by $\sigma(t_i - t_j) = \sqrt{2}\ \sigma(t)$.
-
-These distributions are shown in Figure~\ref{fig:time}. The measured time resolution is worse than what is reported in the TDR. Simulation of the Micromegas in the NSW have suggested a BC window of 2 BCs would be sufficient to collect trigger hits with better than 99\% efficiency~\cite{koki}. The measurements here indicate a window of 5-10 BCs is more likely needed to achieve a good efficiency. The distribution of $\Delta BC$ for pairs of ART hits gives a fitted $\sigma$ of 2.15 BCs, corresponding to a time resolution of 38 ns per hit.
-
+ Based on a previous study of ours and prudence, the MMTP algorithm makes use of a 8 BC window to form a trigger.
+  Figure~\ref{fig:time} shows the distribution of the number of BC clocks used by the algorithm to find a trigger for all events
+ using a 200 ns peaktime.
+  If all hits arrive at the same BC, the BC window is 1. The necessity of a larger window follows from the time jitter
+  of the individual ART signals which can be better measured by the distribution of the BC difference between any two ART signal forming a trigger
+  (shown also in the same figure). 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/artwin_lin.pdf}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/artrpairs_lin.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The time window required to record all hits in a trigger (left) and the $\Delta\text{BC}$ of all pairs of hits in a trigger (right). A gaussian fit is overlaid on the distribution of $\Delta\text{BC}$ and describes the data well.}
+  \caption{Distribution of the BC window used to produced a trigger for all events (left); Distribution of the BC difference of all pairs of ART signals
+ forming a trigger (right). The data are  well described by a Gaussian function. The $\sigma$ written in the plot is the result of the fit to this
+ distribution.}
   \label{fig:time}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The time distribution of ART signals is fairly well described by a Gaussian function
+ with a $\sigma$ of 40 ns.
 
-A global time measurement per trigger is also of interest for the NSW. This is needed to match tracks found in the NSW with tracks found by the TGCs in the big wheel. It will be one of the parameters sent to downstream clients of the NSW trigger, along with the position and quality of a trigger.
 
-A per-trigger time resolution is measured with cosmic data by comparing the time of hits within the trigger to the time reported by the scintillator, which has a resolution of 1-2 ns after being processed by the MMTP FPGA. Two methods are considered for making a trigger-level BCID: the average BCID of all hits, and the earliest BCID of all hits. The distributions are shown in Figure~\ref{fig:timeres}. The average BCID agrees with the reference BCID with $\sim\!50\%$ efficiency, and the earliest BCID agrees with reference with $\sim\!41\%$ efficiency.
-
+The  precise measurement of the trigger BCID  is needed to match tracks found in the NSW with tracks found by the TGCs in
+ the big wheel.
+ We use two methods to define the trigger BCID: the average of the BCID of all hits and the BCID of the earliest hit.
+ As shown in  Fig.~\ref{fig:timeres}, the resolution is approxinmately 1 BC.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/avg_BCID.pdf}
     \includegraphics[width=0.48\textwidth]{figures/gbtanalysis3522/earliest_BCID.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The time resolution of the MMTP relative to the scintillator. The BCID of the trigger can be defined as the average BCID of the ART hits (left) or the earliest BCID (right). Choosing the average BCID performs better than choosing the earliest.}
+  \caption{Distributions of the BCID difference between the scintillator trigger and the MMTP trigger.
+  The scintillator trigger has a time resolution of 0.05 BCID.}          
   \label{fig:timeres}
 \end{figure}
-
-\subsection{Integration time}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Peaktime dependence}
 \label{sec:perf-integ}
+It is a urban legend that the time-jitter of the ART signal generated at threshold is dominated by the variation of the signal
+amplitude. In Ref.~\cite{oldart}, we did show that the time jitter is mildly affected by this cause.
+In the following, we check this again using  200 ns, 100 ns, and 50 ns peaktimes.
 
-The performance of the MMTP is also considered for different integration times of the front-end VMM2 chip. The integration times considered are 200 ns, 100 ns, and 50 ns. The results presented elsewhere in the section are exclusively with 200 ns integration time.
+We run our detector at very high voltage and gain. The detector efficiency is little affected by the chosen peaktime. The cluster multiplicity
+decreases by $\simeq$ 5\% when halving the peaktime.
 
-The efficiency, spatial resolution, and angular resolution are found to not depend significantly on the integration time. They are shown in Appendex~\ref{}. The time resolution of ART hits and the trigger improve with smaller integration time, as shown in Figures~\ref{fig:integ_window},~\ref{fig:integ_pairs},~\ref{fig:integ_avg_bc}, and~\ref{fig:integ_avg_earliest}. Specifically, the time resolution of individual hits decreases from 40 ns to 32 ns when shortening the integration time from 200 ns to 50 ns.
-
-Operating the NSW with short integration then presents one option for improving the time resolution of the Micromegas trigger. However, we note the Micromegas detectors used in this note were operated with a high voltage of 560-570 V, near the maximum voltage. At lower voltage, the efficiency loss of shorter integration time would become a more significant factor.
-
+ The time distributions, analogous to those in Fig.~\ref{fig:time} to~\ref{fig:timeres}
+ are shown in Fig.~\ref{fig:integ_window} to~\ref{fig:integ_avg_earliest}. 
+ The time distribution of individual ART follows is Gaussian function with $\sigma$ decreasing from 40 ns to 32 ns when reducing the peaktime from 200 ns to 50 ns.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.3\textwidth]{figures/gbtanalysis3530/artwin_lin.pdf}
@@ -161,10 +208,10 @@ Operating the NSW with short integration then presents one option for improving 
     \includegraphics[width=0.3\textwidth]{figures/gbtanalysis3528/artwin_lin.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The time window required to record all hits in a trigger for data collected with 200 ns (left), 100 ns (middle), and 50 ns (right) integration time in the VMM. The window decreases as the integration time decreases.}
+  \caption{Distribution of the BC window used to produced a trigger for all events collected with (left) 200, (center) 100, and  (right) 50 ns peaktime.}
   \label{fig:integ_window}
 \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.3\textwidth]{figures/gbtanalysis3530/artrpairs_lin.pdf}
@@ -172,10 +219,13 @@ Operating the NSW with short integration then presents one option for improving 
     \includegraphics[width=0.3\textwidth]{figures/gbtanalysis3528/artrpairs_lin.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The $\Delta\text{BC}$ of all pairs of hits in a trigger for data collected with 200 ns (left), 100 ns (middle), and 50 ns (right) integration time in the VMM. The distribution is narrower as the integration time decreases.}
+  \caption{ Distribution of the BC difference of all pairs of ART signals
+ forming a trigger  for all events collected with (left) 200, (center) 100, and  (right) 50 ns peaktime.
+ The data are  well described by a Gaussian function. The $\sigma$ written in the plot is the result of the fit to this
+ distribution.}
   \label{fig:integ_pairs}
 \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.3\textwidth]{figures/gbtanalysis3530/avg_BCID.pdf}
@@ -183,10 +233,12 @@ Operating the NSW with short integration then presents one option for improving 
     \includegraphics[width=0.3\textwidth]{figures/gbtanalysis3528/avg_BCID.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The time resolution of the MMTP relative to the scintillator, where the BC of the trigger is defined as the average BCID of the ART hits, for data collected with 200 ns (left), 100 ns (middle), and 50 ns (right) integration time in the VMM.}
+  \caption{Distributions of the BCID difference between the scintillator trigger and the MMTP trigger
+ for all events collected with (left) 200, (center) 100, and  (right) 50 ns peaktime.
+ The MMTP  time is evaluated as as the average BCID of the ART hits.}
   \label{fig:integ_avg_bc}
 \end{figure}
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=0.3\textwidth]{figures/gbtanalysis3530/earliest_BCID.pdf}
@@ -194,8 +246,25 @@ Operating the NSW with short integration then presents one option for improving 
     \includegraphics[width=0.3\textwidth]{figures/gbtanalysis3528/earliest_BCID.pdf}
   \end{center}
   \vspace{-10pt}
-  \caption{The time resolution of the MMTP relative to the scintillator, where the BC of the trigger is defined as the earliest BCID of the ART hits, for data collected with 200 ns (left), 100 ns (middle), and 50 ns (right) integration time in the VMM.}
+  \caption{
+Distributions of the BCID difference between the scintillator trigger and the MMTP trigger
+ for all events collected with (left) 200, (center) 100, and  (right) 50 ns peaktime.
+ The MMTP  time is evaluated as as the BCID of the earliest ART hit.}
   \label{fig:integ_avg_earliest}
 \end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+ We use a Monte Carlo simulation to evaluate the efficiency of the MMTP algorithm as a function of the BC window
+ for different peaktime. The result is shown in Fig. \ref{fig:peakeff}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{figure}[!htpb]
+  \begin{center}
+    \includegraphics[width=0.8\textwidth]{figures/trigeffs.pdf}
+\end{center}
+  \vspace{-10pt}
+  \caption{ Simulated efficiency of the MMTP algorithm as a function of the BC window for different peaktimes.
+ This estimate is based on an octuplet with 100\% efficiency.}
+  \label{fig:peakeff}
+\end{figure}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

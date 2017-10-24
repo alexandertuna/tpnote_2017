@@ -1,18 +1,62 @@
-\section{Experiment}
+\section{Cosmic muon telescope and Micromegas octuplet}
 \label{sec:exp}
 
-The Micromegas and scintillator detectors of the Harvard cosmic ray test stand are described in detail in previous notes presenting the performance of the full MMFE8 readout~\cite{noisy,noiseless}. Eight layers of Micromegas detectors are stacked vertically for the purpose of providing eight measurements of the position of a cosmic muon as it travels through the experiment. The readout strips of each layer have a pitch of 0.4 mm, and they are arranged as designed for the NSW: $XXUV-UVXX$, where strips in the $X$ planes run perpendicular to the readout edge of the chamber, and strips in the $U$ ($V$) planes are tilted at an angle of $1.5^\circ$ ($-1.5^\circ$) to provide a measurement of the non-precision coordinate. Each Micromegas layer is 20 cm by 20 cm.
+The Micromegas and scintillator detectors of the Harvard cosmic ray test stand are described in detail in previous notes presenting 
+the performance of the full MMFE8 readout~\cite{noisy,noiseless}. Eight layers of Micromegas detectors are stacked vertically for the
+ purpose of providing eight measurements of the position of a cosmic muon as it travels through the experiment.
+ The readout strips of each layer have a 0.4 mm pitch, and are arranged according to the NSW design: $XXUV-UVXX$, in which strips in the $X$ planes run
+ perpendicular to the readout edge of the chamber, and strips in the $U$ ($V$) planes are tilted at
+ an angle of $1.5^\circ$ ($-1.5^\circ$) to provide a measurement of the non-precision $y$ coordinate. Each Micromegas detector covers an active area of
+ 200 x 204.6 mm$^2$.
+The type and $z$~position of the different readout
+ planes are summarized in Table~\ref{tab:tab_1}.
+%%%%%%%%%%%%%%%%%%%%%%%%%%% 
+\begin{table}
+ \begin{center}
+% \begin{ruledtabular}
+ \begin{tabular}{lccc}
+ \hline \hline
+  Readout plane  &  Type & $z_{\rm board} (mm)$ &  $z_{\rm bary} (mm)$      \\
+  0      & $X$   &  0.0 &  -2.7     \\ 
+  1      & $X$  & 11.2 &   13.9  \\
+  2      & $U$   &32.4 &   29.7 \\
+  3      & $V$   & 43.6 &    46.3   \\
+  4      & $U$   & 113.6 &    110.9    \\
+  5      & $V$   & 124.8 &   127.5  \\
+  6      & $X$   & 146.0 &    143.3   \\
+  7      & $X$   & 157.2 &    160.0   \\
+ \hline \hline
+ \end{tabular}
+% \end{ruledtabular}
+ \caption{ Characteristics of the 8 Micromegas planes assembled into 2 quadruplets (see text).
+ Planes $x$ have electrodes parallel to the scintillator $x$ coordinates. Electrodes of planes $u$ and $v$ are 
+tilted with respect to the $x$ electrodes by $\pm 1.5 \deg$, respectively. The  positions
+along the $z$ axis of each electrode plane are called  $z_{\rm board}$. 
+The $z$ position at half drift gap, where the barycenter is reconstructed, is called $z_{\rm bary}$. 
+ }
+\label{tab:tab_1}
+ \end{center}
+\end{table}
+Three layers of scintillators counters -  placed above, on top, and below the octuplet -  provide a trigger
+for the full MMFE8 readout. A scintillator trigger requires the coincidence of signals in all three layers. 
+ Concrete blocks, 5 feet thick, are placed between the octuplet and the bottom scintillator to harden the muon sprectrum.
 
-Three layers of scintillators with PMTs are placed above, on top of, and below the Micromegas to provide a trigger for the full MMFE8 readout. A scintillator trigger is formed when all three layers of scintillator detect a coincidence. There is $\sim\!2\!-\!3$ meters of concrete between the Micromegas and the bottom scintillator to filter out low-energy particles.
-
-\subsection{Electronics}
+\subsection{Readout electronics}
 \label{sec:exp-elx}
+The Micromegas readout electronics consists of three cards. The MMFE8 card is a demonstrator that houses 8 VMM2 ASICs per card.
+ These ICs provide digitized  arrival-time and charge information for the signal of each  Micromegas readout strip.  
+ A description of the MMFE8 boards can be found in Refs.~\cite{noisy,mmfe8}. A study of its performance is in
+ Refs.~\cite{noisy,noiseless}. The MMFE8 demonstrator uses a FPGA for configuring
+ and reading out the VMMs digitized information  over ethernet.
+ We use 8 MMFE8s to read the 512 channels of  the 8 layers of Micromegas in the octuplet.
 
-The Micromegas readout paths in this note include three cards. The MMFE8 is the front-end readout card, and it houses 8 VMM2 ASICs per card. These readout chips receive signals from the detector and digitize them, and they are discussed in great detail elsewhere~\cite{nswtdr,noisy,noiseless}. The MMFE8 prototype also houses an FPGA for configuring and reading out the VMMs over ethernet. The experiment in this note has 8 layers of Micromegas detectors with 512 channels each, and therefore 8 MMFE8s.
+ The ADDC card~\cite{nswtdr} receives data from 4 MMFE8s over miniSAS connections and packages this data
+ into a single output for the MMTP board. For this purpose, the ADDC V1 uses a FPGA communicating with a GBTx chip.
+ As mentioned earlier, we need two such boards.
 
-The ART Data Driver Card (ADDC) is a driver card for the Micromegas trigger data path. It receives data from 4 MMFE8s over mini-SAS connections and packages this data into a single output for downstream clients. The card houses an FPGA for this purpose. There are 2 ADDCs in this experiment to receive data from the 8 MMFE8s.
-
-The Micromegas Trigger Process (MMTP) is the last card of the Micromegas trigger path. It receives data from ADDCs over fiber optical connections and interrogates the data for the presence of triggers. The card houses an FPGA for this purpose. There is 1 MMTP in this experiment to receive data from the 2 ADDCs. An ADDC V1 and a prototype MMTP are shown in Figure~\ref{fig:cards}.
+The Micromegas Trigger Process (MMTP) is the last card of the Micromegas trigger path. It receives data from ADDCs over SFP+  optical connections and
+ searches the data for the presence of hits consistent with a track segment using firmware running on a  VC707 FPGA evaluation board.
+  Pictures of the ADDC V1 and the demonstrator MMTP are shown in Figure~\ref{fig:cards}.
 
 \begin{figure}[!htpb]
   \begin{center}
@@ -20,43 +64,82 @@ The Micromegas Trigger Process (MMTP) is the last card of the Micromegas trigger
     \includegraphics[width=0.48\textwidth]{figures/photos/IMG_0836.JPG}
   \end{center}
   \vspace{-10pt}
-  \caption{An FPGA-based ADDC V1 on the bench (left) and the MMTP placed on a VC707 FPGA evaluation board (right) in the laboratory.}
+  \caption{Pictures of the ADDC V1  (left) and the MMTP board (right).}
   \label{fig:cards}
 \end{figure}
 
-Additionally, a board was built at Harvard for the purpose of operating the MMFE8s synchronously, referred to as the clock/trigger board. This board sends a 40 MHz clock to all 8 boards, which are used by each board as a mother clock, thereby synchronizing them. The board also receives trigger signals from the scintillator and distributes them to the MMFE8s, as discussed in Section~\ref{sec:exp-mmfe}. A cartoon schematic of the electronics is shown in Figure~\ref{fig:cartoon_elx}.
+An additional board, referred to as  clock/trigger card, has been designed  by J.~MacArthur.
+ This board generates and distributes a 40 MHz clock to all MMFE8 and MMTP boards.
+ Time is measured in units of BC, where BC is a tick of this clock.
+ The content of counters incremented using this common external clock, referred to as BCID and
+ located in all boards, is attached to the event information.
+The clock/trigger cards also receive and distribute scintillator-trigger signals   
+as discussed in Section~\ref{sec:exp-mmfe}. 
+A  flow diagram of the hardware is shown in Figure~\ref{fig:cartoon_elx}.
 
 \begin{figure}[!htpb]
   \begin{center}
     \includegraphics[width=1.0\textwidth]{figures/cartoons/electronics_path.pdf}
   \end{center}
   \vspace{-20pt}
-  \caption{Cartoon schematic of the data flow in the electronics used at the Harvard cosmic ray test stand. Inspiration for the cartoon is provided by L. Levinson.}
+  \caption{Schematic of the data flow in the readout electronics used at the Harvard cosmic ray test stand. 
+    Inspiration for the cartoon was provided by L. Levinson.}
   \label{fig:cartoon_elx}
 \end{figure}
 
 \subsection{Trigger data path}
 \label{sec:exp-art}
 
-The Micromegas trigger data path begins at the VMM. The data path is referred to as the Address in Real Time (ART) data path, which refers to the output of the VMM. The full MMFE8 readout can include many strips per BC, and each strip read out includes lots of information about the strip, including charge (PDO) and time (BCID, TDO). Alternatively, the ART data path sends the data from at most one strip per BC, and it only includes the address of the strip. This is the crux of the trigger data path; the bandwidth of the trigger data path is greatly reduced relative to the full readout. One bit is used to announce a hit is recorded, and six bits are used for the address.
+The MMTP data path starts with the ART signal provided by each VMM.
+The VMM has two operating modes for the ART signal: the ART flag can be issued when the integrated charge of a signal is above threshold ($\simeq$ 3 fC) or reaches its peak value 
+ ($\simeq$ chosen peaktime, usually 200 ns). We choose the first mode to reduce the latency of the Micromegas trigger which is already
+ quite close to the allocated 1 $\mu$s~\cite{nswtdr}.
 
-The VMM has two operating modes for the ART: at-threshold and at-peak. These modes describe the time at which an ART signal is sent by the VMM. Threshold mode is faster than peak mode because the VMM sends the signal as soon as a threshold is crossed, instead of waiting until a peak is found. The data in this note are taken with the ART operating at threshold.
+The ART flag is followed by the serialized address of the channel (6-bits) released at rising and falling edges of the
+ MMFE8 160 MHz ART clock,  derived by boosting up  the external BC clock.
+At the flag falling edge,
+the ADDC uses the MMFE8 ART clock to deserialize the ART address. This clock, scaled down to 40 MHz, also increments a counter, the value of which
+at the flag  is attached to the channel address together with  MMFE8 board and VMM numbers (ART string). 
+ At each  BC, the ADDC uses  GBTx frames to collapse the ART informations of 32 VMMs into 112-bits packets which
+are sent through a SFP+ optical link to the MMTP board. Each frame has only space for 8 ART strings. If more strings are present,
+ the ADDC keeps the eight with highest priority, where the priority is assigned according to the VMM position. While this is not a problem in our case,
+this step will need re-evaluation in the LHC high-L situation.
 
-The VMM sends ART data over mini-SAS cables to the ART Data-Driver Card (ADDC), which collects ART signals from 4 MMFE8 and packages them into a single output. The ART data bypasses the MMFE8 readout chip entirely. The data in this note are taken with ADDC V1, in which the ADDC has an on-board FPGA for collecting and packaging the incoming signals. The final version of the ADDC will have on-board ASICs for this purpose, since it will be mounted in the ATLAS cavern and must be radiation tolerant. However, the functionality of the FGPA-based and ASIC-based ADDC are expected to be identical.
+ The  e-link between each MMFE8 and the ADDC is provided by miniSAS 36-line cables in which each VMM ART output uses a preassigned pair of cables.
+ Unfortunately, the ART clock uses pairs of  unshielded sideband lines which generate quite a bit of
+ EMI captured by the octuplet Al frame and in turn injected into the Micromegas readout electrodes.
+ It took us a few months to discover it and one day to fix it.
 
-The ADDC then sends the packaged ART data to the Micromegas trigger processor (MMTP). The communication protocol is ``GBT'', which was developed at CERN as a radiation hard bi-directional optical link for LHC upgrades. The signals are sent over fiber optic cables. The MMTP collects ART signals, analyzes them for patterns resembling a trigger, and sends trigger information to downstream clients. These steps are performed by an FPGA. The data in this note are taken with an implementation of the MMTP on a Xilinx VC707 development board with a Virtex-7 FPGA.
+  
 
-In this setup, 2 ADDCs are placed near the detector and accept ART signals from the 8 MMFE8s. The VC707 is placed further from the detector in a counting room, along with the DAQ computer and scintillator readout electronics. It accepts signals from both ADDCs.
+
+
+  The ADDC V1 were built by BNL and the firmware to receive the data, align  and format them was imported by Lin Yao from the ART ASIC
+architecture\cite{addc}.
+ Two mistakes were found and fixed in the firmware: a) an error in deserializing ART data with the 160 MHz clock which produced
+ incorrect ART addresses; and b) the ART flag, variable in length, was not always detected resulting into a loss of events.
+ Other than that, the ADDC firmware was found to be flawless.
+ The MMTP process uses the ADDC information to find and characterize trigger candidates.   
+
+ 
+As in the NSW design, the 2 ADDCs are placed near the octuplet and the VC707 board receiving
+ their data is placed in a 10 m away shack -elevated to control room status- 
+ which also houses the DAQ computer and scintillator trigger/readout electronics. 
 
 \subsection{MMFE8 and scintillator data path}
 \label{sec:exp-mmfe}
+The ART data is distinct from the full readout of the MMFE8, as the latter includes detailed information about the charge and arrival
+time of all signals captured during one event. This event information is used to evaluate the MMTP efficiency, and
+time and spatial resolution independently of the octuplet efficiency.
+The MMFE8 and scintillator data paths are described in detail in Refs.~\cite{noisy,noiseless}. Upon a scintillator trigger, the DAQ computer pulls out 
+ the MMFE8 information recorded  in 100 $\mu$s before the trigger using an ethernet connection. 
+ The arrival time of the scintillator signals are also recorded
+ and sent over ethernet to the DAQ computer. Micromegas and scintillator data, as well MMTP data, are recorded event by event with the DAQ-computer time stamp.
+ This allows us to recombine the information of a single event split into different files. 
 
-The MMFE8 and scintillator data paths are described in detail elsewhere~\cite{noisy,noiseless}. In brief, the DAQ computer communicates directly with the MMFE8s over ethernet connection. The full MMFE8 readout includes charge and time information for each strip above threshold in the form of PDO, TDO, and BCID. The MMFE8 only sends data over ethernet after it has received a trigger signal from the scintillator. The signal is sent from the scintillator to the clock/trigger board over coaxial cable, and the clock/trigger board sends this signal to the 8 MMFE8s over microHDMI.
+ The scintillator trigger, which has a 1.2 ns resolution, is also sent to the MMTP where it is stamped with content of a counter incremented by  the  640 MHz 
+clock derived from  the external BC clock.
 
-The scintillator trigger is formed with a coincidence of six signals corresponding to the top, middle, and bottom scintillator counters. The signals are acquired by Lecroy TDC and sent to a CAMAC crate controller, which then sends its data over ethernet to the DAQ computer.
 
-\subsection{Scintillator timestamp}
-\label{sec:exp-scitime}
 
-Additionally, there is a connection between the scintillator electronics and the MMTP, to utilize the fast internal clocks of the MMTP FPGA. The scintillator trigger signal is sent directly to the MMTP, which captures the signal using a 640 MHz clock and forwards this timestamp to the DAQ computer over ethernet. This is referred to as the \textit{scintillator timestamp}. It provides a more accurate reference time than the scintillator BCID~\cite{noisy} captured by the MMFE8s, since the 640 MHz clock of the MMTP allows for $\sim\!1.56$ ns resolution, versus the $\sim\!25$ ns resolution of the 40 MHz clock.
 

@@ -1,14 +1,27 @@
-\section{Data-taking}
+\section{Data taking}
 \label{sec:data-taking}
 
-The data described in this note was taken from May 2017 until July 2017. Each continuous period of data-taking is referred to as a ``run'', and the runs are described in Table~\ref{tab:runs}. 
+The data described in this note were collected from May 2017 until July 2017. Each continuous period of data-taking is
+ referred to as a ``run'', and the runs are listed in Table~\ref{tab:runs}. 
+ One notes that here are many more MMTP events than MMFE8 events. There are several  reasons
+ for this. The MMTP sends data whenever the finder finds a trigger, whereas the MMFE8 only sends
+ data only when it receives a trigger signal from the scintillator (the scintillator trigger rate is about 1 Hz rate,
+ and 60\% of the triggers contain a good track with 4 or more clusters and triggerable).
 
-The astute reader will notice there are many more MMTP events than MMFE8 events. There are three reasons for this. First, the MMTP sends data whenever the finder creates a trigger, whereas the MMFE8 only sends data when it receives a trigger signal from the scintillator. The MMTP then records many more triggers due to low energy cosmic muons, cosmic muons which miss the scintillators, and random noise which happens to satisfy the loosened trigger requirements. Run 3522 in particular observed more triggers from noise than the other runs. Second, the MMTP will typically make a handful of triggers for a single cosmic muon passing through the detector due to the overlapping roads. For example, a downward-going muon passing entirely through road 2 will make triggers in roads 1, 2, and 3. Third, if the incoming ART data is spread across many BCs, the MMTP will often make triggers on multiple BCs as the hits arrive. 
+ For a good track, the MMTP  typically produces a handful of triggers 
+ due to the overlapping roads. For example, a downward-going muon passing entirely through road 2
+ also generates triggers in roads 1 and 3. In addition, if a track has more hits than the minimum required by the finder,
+ when some of these hits get old additional triggers can be produced.
+ A large number of triggers can be also produce by non-random noise.
+ This seem to be the case for  run 3522 and 3530.
+ This started a long investigation of the noise source. The cause has been now identified as
+ EMI produced by the  the ART clock transmitted from the MMFE8 to the ADDC through an unshielded pairs of wires
+ in the miniSAS cable and by the AC/DC converter powering the ADDC. 
 
-These last two circumstances are an open issue of the firmware logic, and duplicates will likely need to be removed from the MMTP before being sent to the sTGC trigger processor. In this note, if many triggers are created by the MMTP to describe a single muon, the trigger with the most hits is chosen for analysis.
-
-Between Runs 3522 and 3527, two front-end cards were repaired and replaced on the detector. Therefore the data from Run 3522 is presented as the default performance in Section~\ref{sec:perf}, whereas the data from Runs 3527, 3528, and 3530 are used for comparing the performance for different integration times in Section~\ref{sec:perf-integ}
-
+ Between Runs 3522 and 3527, two front-end cards were repaired and replaced on the detector. Therefore, only
+ data from Runs 3527, 3528, and 3530 are used to compare
+the MMTP performance using different peaktimes in Sec.~\ref{sec:perf-integ}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{table}[!htpb]
 \begin{center}
   \begin{tabular}{c | c | c | c | c}
@@ -19,21 +32,27 @@ Between Runs 3522 and 3527, two front-end cards were repaired and replaced on th
     3528 & 07/02 - 07/07 & 205053       & 3253330     & 50 ns integration time \\
     3530 & 07/19 - 07/24 & 192114       & 4060891     & 200 ns integration time \\
   \end{tabular}
-  \caption{Information about each run of data-taking.}
+  \caption{Run information.  }
 \label{tab:runs}
 \end{center}
 \end{table}
-
-% \subsection{Monitoring}
-% \label{sec:data-mon}
-
-% \subsection{Readout errors}
-% \label{sec:data-errors}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Combining data streams}
 \label{sec:data-streams}
+As already mentioned, five data streams are produced and recorded on disk. In addition  to the scintillator and MMFE8 data streams,
+the MMTP algorithm writes a data stream (TPFIT) with the trigger properties - including its BCID  as explained earlier,
+ a data stream (GBT) with ADDC data in the 15 the BC preceding the
+MMTP 
+trigger, and a data stream (SCTBC) containing  the the scintillator trigger time converted into a 16-bit  BCID. 
 
-Three data streams are produced by the MMTP and written to disk, in addition to the scintillator and MMFE8 data streams. Two of the MMTP streams are written when a trigger is found. First, the trigger itself is output, which includes a BCID of the trigger, the ART hits of the trigger, and the quantities describing the trigger which are produced by the fitter. Second, all of the incoming ART hits in a window of 15 BCs around the trigger are output. The BCIDs of the hits used by the trigger are extracted from the second stream, and it is additionally useful for debugging the behavior of the algorithm offline. The third stream is independent of the algorithm, and it writes a 16-bit BCID to disk whenever it receives a trigger from the scintillator. This stream runs on a 640 MHz clock and allows for offline comparison of the TP trigger BCID to the scintillator BCID in steps of 1.56 ns.
+Scintillator data, MMFE8 data, and  SCTBC data
+ are easily combined (SC+MM data) using the event number and occasionally the DAQ time stamp.
+Because the MMTP rate is much higher, we combine it with  SC+MM data through several steps: a) we select SC+MM data which contain MM clusters
+ compatible with a track
+and which also satisfy the MMTP finder; d) we select TPFIT events first with a DAQ time stamp within 100 ms from that of the SC+MM event and then
+in a 3 BC window around SCTBC; c) of the remaining events in the TPFIT data, we pick the one which has more VMMs and boards in common with the MM clusters.
 
-All streams are synchronized and combined offline by comparing the machine time of their respective DAQ scripts as they are written to disk. The second MMTP trigger stream is additionally required to contain all of the hits recorded in the first MMTP stream.
+To associate GBT events to TPFIT events, we use the event number and BCID comparisons between BCID  trigger and ADDC hits.
+
 

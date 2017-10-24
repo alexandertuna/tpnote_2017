@@ -1,7 +1,32 @@
 \section{Conclusion}
 \label{sec:conclusions}
+ Using millions of cosmic tracks, we have commissioned a prototype of Micromegas trigger processor,
+ and measured its performance using tracks reconstructed with Micromegas clusters.
+ We use trigger roads as large as  1 VMM, and offline we reduce them to 1/4 VMM to evaluate
+ the NSW performance.
 
-The performance of the Micromegas Address in Real Time (ART) and trigger processor is shown. The performance is measured with hundreds of thousands of cosmic muons in a low-background environment at the Harvard cosmic ray test stand. The test stand employs a full trigger electronics path with prototype hardware: MMFE8s equipped with VMM2, the FPGA-based ADDC V1, and a Micromegas trigger processor (MMTP) implemented on a VC707 FPGA evaluation board.
+ In this condition, 
 
-Given a track identified by the full front-end MMFE8 readout, the efficiency of the Micromegas trigger is $>\! 99\%$. The spatial, angular, and time resolution of the MMTP is measured with the front-end readout as reference, and the spatial and angular resolutions are found to be comparable to predictions made in the TDR. The time resolution is worse than predicted. The time resolution improves with shorter integration time; however, even with the shortest integration time considered, the time resolution is worse than anticipated.
+ a) the $\theta_{\rm global}$ accuracy is found to be 0.06 mrad,  better than what is needed;
+
+ b) the $\theta_{\rm local}$ accuracy is spoiled by $\delta$ rays. A 15 mrad cut on the difference of these two angles
+ reduces the MMTP efficiency by 4\%;
+
+ c) we did not measure directly the MMTP $\phi$ resolution. From the accuracy in measuring
+ the non-precision coordinate, we estimate that the MMTP $\phi$ resolution  is 33 and 14 mrad for the shortest (which are closest to the beam line) and longest  Micromegas readout strips, respectively. 
+
+ Considering that a NSW module will hardly reach a 100\% efficiency, it seems prudent
+ to start accepting that the MMTP algorithm will need to use a 7-8 BC window, independent of the
+ VMM  peaktime.
+
+ In our measurements, the rate of uncorrelated noise is about 2  Hz per strip.
+ Using a large BC window, the MMTP spatial accuracy will be further degraded by accidental hits at the highest LHC planned
+ luminosity.   One expects a rate of
+ about 40 kHz per strip, almost independent of the distance from the beamline.
+
+ We are presently simulating the MMTP response in this high background environment.
+ In particular, we are investigating the use of $\leq$1/8 VMM  roads for forming triggers.
+ Such narrow roads might not require the use of local fits to reduce the background, thus eliminating the bottle-neck of 
+the fitter (only a few found triggers can be fitted at each BC) and also  reducing the trigger latency.
+
 

@@ -1,9 +1,18 @@
 \section{Introduction}
 \label{sec:intro}
 
-We investigate the performance of the Micromegas Address in Real Time (ART) and trigger processor. This is one of the two trigger technologies introduced for the New Small Wheel (NSW) upgrade of the ATLAS muon spectrometer, which is intended to be built and installed in the coming years. 
+We have implemented and debugged the firmware of the Micromegas trigger processor (MMTP) hosted momentarily
+in a VC707 FPGA evaluation board.
+The MMTP is one of many modules contributing to the formation of the Level-1 muon end-cap
+ trigger for the New Small Wheel (NSW) upgrade of the ATLAS muon spectrometer~\cite{nswtdr}.
+ The MMTP  uses  the  Address in Real Time (ART) signals issued by each VMM in the MMFE8 front-end boards
+ and formatted by an intermediate board called the Art Data Driver Card (ADDC). 
 
-The performance is measured with hundreds of thousands of cosmic muons recorded at the Harvard cosmic ray test stand, which employs a full trigger electronics path with prototype hardware: MMFE8s equipped with VMM2, the FPGA-based ADDC V1, and a Micromegas trigger processor (MMTP) implemented on a VC707 FPGA evaluation board.
 
-This note presents the performance of the trigger data path; the full readout data path is described in previous notes~\cite{noisy,noiseless} using the same detectors and similar electronics. The reader is encouraged to read these notes for complementary measurements and a better understanding of the performance of the Micromegas detectors and electronics in a broader context.
 
+The MMTP performance is measured using our Micromegas octuplet equipped with MMFE8 front-end boards which use the 
+VMM2 ASIC~\cite{noisy,noiseless}. Following the  NSW TDR design, the ART signals are sent to the trigger processor via optical links
+ in two steps. First, the ART signals of each board are deserialized and reformatted with 2 FPGA-based ADDC V1 cards.  
+
+ In these conditions,  several millions of cosmic muons have been collected with the Harvard cosmic ray telescope and are used 
+to evaluate the performance of the Micromegas trigger system reported in this note.
